@@ -1,0 +1,257 @@
+import itertools
+import string
+import subprocess
+import os
+from flask import Flask, jsonify, render_template, request
+import chess
+
+
+app = Flask(__name__)
+
+
+def add_state(board: list, quality):
+    letters = string.ascii_lowercase
+    path = "/static/svg/"
+    q = quality
+    board_chess = {
+        "a1": f"{path}{q}/rook_white.png",
+        "b1": f"{path}{q}/knight_white.png",
+        "c1": f"{path}{q}/bishop_white.png",
+        "d1": f"{path}{q}/queen_white.png",
+        "e1": f"{path}{q}/king_white.png",
+        "f1": f"{path}{q}/bishop_white.png",
+        "g1": f"{path}{q}/knight_white.png",
+        "h1": f"{path}{q}/rook_white.png",
+    }
+
+    for i, v in enumerate(list(board_chess.values())):
+        coord = f"{letters[i]}8"
+        board_chess[coord] = v.replace("white", "black")
+
+    pawns = {
+        f"{letters[p]}2": "/static/svg/2048/pawn_white.png"
+        for p in range(8)
+    }
+    pawns_black = {
+        f"{letters[p]}7": "/static/svg/2048/pawn_black.png"
+        for p in range(8)
+    }
+    board_chess = board_chess | pawns | pawns_black
+
+    for row in range(8):
+        for col in range(8):
+            board[row][col][2] = board_chess.get(board[row][col][1], "")
+    return board
+
+
+def create_board(initial=True):
+    letters = string.ascii_lowercase
+    cols = ["even", "odd"]
+    cycle = itertools.cycle(cols)
+    board = []
+    for x in range(8):
+        row = []
+        for y in range(8):
+            row.append([
+                next(cycle), f"{letters[y]}{8-x}", ""
+            ])
+        board.append(row)
+        cols = list(reversed(cols))
+        cycle = itertools.cycle(cols)
+    if initial:
+        board = add_state(board, 2048)
+        board = [element for sublist in board for element in sublist]
+    return board
+
+
+# to swap the board with reverse the list # as the board changes coords but the
+# colors are the same.
+def swap_board(board: list):
+    reversed_board = reversed(board)
+    return reversed_board
+
+
+def get_promotions(board: list[list]):
+    promotions = {}
+    for color in ["white", "black"]:
+        promotions[color[0]] = color_solver_prom(color, board)
+    return promotions
+
+
+def color_solver_prom(color, board):
+    urls = []
+    patterns = []
+    pieces = ["rook", "bishop",
+              "queen", "knight"]
+    for piece in pieces:
+        patterns.append(f"{piece}_{color}")
+    for row in board:
+        if contains(patterns, row[2]):
+            urls.append(row[2])
+    return list(set(urls))
+
+
+def contains(patterns, row):
+    for pattern in patterns:
+        if pattern in row:
+            return True
+    return False
+
+
+def fen_to_board(fen: str):
+    fen_board = []
+    parts = fen.split(" ", 1)
+    board_part = parts[0]
+    rows = board_part.split("/")
+    for row in rows:
+        new_row = expand_row(row)
+        fen_board.append(new_row)
+    board = create_board(False)
+    for row, rowfen in zip(board, fen_board):
+        for col, colfen in zip(row, rowfen):
+            col[2] = colfen
+    maps = create_mappings()
+    for row in board:
+        for col in row:
+            col[2] = maps.get(col[2], "")
+    board = [element for sublist in board for element in sublist]
+    return board
+
+
+def create_mappings():
+    path = "static/svg/2048/"
+    pieces = os.listdir(path)
+    maps = {}
+    for piece in pieces:
+        p = ""
+        if "white" in piece:
+            if "knight" in piece:
+                p = "N"
+            else:
+                p = piece[0].upper()
+        if "black" in piece:
+            if "knight" in piece:
+                p = "n"
+            else:
+                p = piece[0]
+        maps[p] = "/" + path + piece
+    return maps
+
+
+def expand_row(row: str):
+    new_row = []
+    for item in list(row):
+        if item.isdigit():
+            for _ in range(int(item)):
+                new_row.append("")
+        else:
+            new_row.append(item)
+    return new_row
+
+
+# routes start here
+@app.route("/")
+def home():
+    board = create_board()
+    proms = get_promotions(board)
+    t = render_template("index.html", sqs=board, proms=proms)
+    return t
+
+
+# endpoint that sends back whatever it receives
+@app.route("/send", methods=["POST"])
+def send():
+    if request.method == "POST":
+        data = request.get_json().get("datos")
+        return jsonify({"data": data})
+    return jsonify("nothing")
+
+
+@app.route("/check", methods=["POST"])
+def check():
+    fen = request.get_json().get("fen")
+    moves = list(chess.Board(fen).generate_legal_moves())
+    moves = [move.uci()
+             for move in moves]
+    return jsonify({"data": moves})
+
+
+@app.route("/newgame", methods=["POST"])
+def new_game():
+    fen = request.get_json().get("fen")
+    board = fen_to_board(fen)
+    t = render_template("board.html", board=board)
+    return jsonify({"data": t})
+
+
+@app.route("/eval", methods=["POST"])
+def get_engine_move():
+    fen = request.get_json().get("fen")
+    engine = request.get_json().get("engine")
+    command = ["./eval", engine, fen, "5"]
+    out = subprocess.run(
+            command,
+            capture_output=True
+        )
+    move = out.stdout.decode("utf-8").replace("\n", "")
+    print(move, out.stderr)
+    return jsonify({"data": move})
+
+
+@app.route("/swap", methods=["POST"])
+def swap():
+    fen = request.get_json().get("fen")
+    white_first = request.get_json().get("whitefirst")
+    board = fen_to_board(fen)
+    if not white_first:
+        board = swap_board(board)
+    t = render_template(
+            "board.html",
+            board=board)
+    return jsonify({"data": t})
+
+
+@app.route("/pgn", methods=["POST"])
+def pgn_parser():
+    pgn = []
+    coords: str = request.get_json().get("coords")
+    print(coords)
+    fenstr = request.get_json().get("fen")
+    coords = coords.rstrip(" ")
+    coords_list = coords.split(" ")
+    board = chess.Board()
+    if fenstr is not None:
+        board = chess.Board(fenstr)
+    counter = 0
+    move_number = 1
+    pair = []
+    for coord in coords_list:
+        m = chess.Move.from_uci(coord)
+        move = board.san(m)
+        board.push(m)
+        pair.append(move)
+        if counter % 2 != 0:
+            pgn_move = f"{move_number}. "+" ".join(pair)
+            pgn.append(pgn_move)
+            move_number += 1
+            counter = 0
+            pair = []
+        else:
+            counter += 1
+    print(pgn)
+    return jsonify({"pgn": pgn, "fen": board.fen()})
+
+
+@app.route("/import-pgn", methods=["GET"])
+def import_pgn():
+    return render_template("importpgn.html")
+
+
+@app.route("/import-fen", methods=["POST"])
+def import_fen():
+    fen = request.get_json().get("fen")
+    board = fen_to_board(fen)
+    t = render_template(
+            "index.html",
+            board=board)
+    return jsonify({"data": t})

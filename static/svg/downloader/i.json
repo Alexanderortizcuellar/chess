@@ -1,0 +1,12 @@
+{"bishop_black.png": "Chess_bdt45.svg.png", 
+"bishop_white.png": "Chess_blt45.svg.png",
+ "king_black.png": "Chess_kdt45.svg.png",
+ "king_white.png": "Chess_klt45.svg.png",
+ "knight_black.png": "Chess_ndt45.svg.png",
+  "knight_white.png": "Chess_nlt45.svg.png", 
+  "pawn_black.png": "Chess_pdt45.svg.png", 
+  "pawn_white.png": "Chess_plt45.svg.png",
+   "queen_black.png": "Chess_qdt45.svg.png", 
+   "queen_white.png": "Chess_qlt45.svg.png", 
+   "rook_black.png": "Chess_rdt45.svg.png", 
+   "rook_white.png": "Chess_rlt45.svg.png"}

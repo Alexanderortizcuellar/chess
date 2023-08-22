@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess App</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Include your custom styles here -->
+</head>
+<body>
+    <header>
+        <h1>Chess App</h1>
+        <button id="newGameButton">New Game</button>
+    </header>
+    
+    <main>
+        <div id="chessboard"></div>
+        <div id="options">
+            <label for="engineSelect">Select Engine:</label>
+            <select id="engineSelect">
+                <option value="engine1">Engine 1</option>
+                <option value="engine2">Engine 2</option>
+                <!-- Add more engine options here -->
+            </select>
+            <button id="backButton">Back</button>
+            <button id="forwardButton">Forward</button>
+            <button id="swapButton">Swap Board</button>
+        </div>
+    </main>
+    
+    <footer>
+        <button id="undoButton">Undo</button>
+        <button id="resignButton">Resign</button>
+        <!-- Add more game control buttons here -->
+    </footer>
+
+    <script src="script.js"></script> <!-- Include your JavaScript logic here -->
+</body>
+</html>
+

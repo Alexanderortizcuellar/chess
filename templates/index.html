@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width">
+		<link rel="stylesheet" href="/static/style.css" type="text/css" media="screen" title="no title" charset="utf-8">
+		<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+		<title>chess</title>
+		<script type="module" src="static/js/dist/esm/chess.js"></script>
+	<style> 
+
+		</style>
+	</head>
+	<body>
+		<dialog class="dlg">
+			<form method="dialog">
+			<div class="white-prom">
+		{% for sq in proms.w %}
+		<button style="background-image: url('{{ sq }}')"> </button>
+		{% endfor %}
+			</div>
+			<div class="black-prom">	
+		{% for sq in proms.b %}
+		<button style="background-image: url('{{ sq }}')"></button>
+		{% endfor %}
+			</div>
+			</form>
+
+		</dialog>
+
+		<dialog class="fen-dlg">
+			<form method="dialog">
+			<div class="import-fen-con">
+				<label>Fen string</label>
+				<input type="text"  id="fen-entry"><br>
+				<button id="fen-dlg-btn"> Load Position</button>
+				
+			</div>
+			</form>
+		</dialog>
+
+
+		<dialog>
+			<form action="">
+				
+			<div class="import-pgn-con">
+				
+			</div>
+			</form>
+		</dialog>
+	<!--dialog for new game-->
+		<dialog class="newgame-dlg" style="background: transparent;border:none; width:320px">
+			<form method="dialog">
+				{% include 'game.html' %}
+
+			</form>
+		</dialog>
+
+		<div class="pgn-container">
+			<div class="pgn"></div>
+
+		</div>
+		<div class="container">
+			{% for x in sqs %}
+			
+			<button class="sq {{ x[0] }}" id="{{ x[1] }}" style="background-image:url('{{ x[2] }}');background-position:center;background-repeat:no-repeat;"> </button>
+			{% endfor %}
+		</div>
+		<div class="row-cmd">
+			<button class="turn-board"></button>
+			<button class="full-back"></button>
+			<button class="back-btn"></button>
+			<button class="forwd-btn"></button>
+			<button class="full-forwd"></button>
+
+		</div>
+		<div class="row-cmd">
+			<button class="export"></button>
+			<button class="help"></button>
+			<button class="import"></button>
+		</div>
+		<button class="newgame">new Game</button>
+		<div class="test">
+			<div><label for="pgn">pgn</label><input type="text" name="pgn" id="pgn"></div>
+			<div><label for="fen">fen</label><input type="text" name="fen" id="fen"></div>
+		</div>
+		<script type="module" src="/static/index.js" charset="utf-8"></script>
+	</body>
+</html>
+
+

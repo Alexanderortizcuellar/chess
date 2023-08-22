@@ -1,0 +1,102 @@
+<div class="new-game">
+<div class="mode-wraper">
+	<label for="mode">Mode</label>
+	<select id="mode">
+	<option value="board">Board</option>
+	<option value="engine">Engine</option>
+	<option value="self">self</option>
+	<option value="random">Random</option>
+	<option value="position"> From position</option>
+	</select>
+		
+	</select>
+	</div>
+
+	<div class="color-wrapper">
+	<label>Color</label>
+	<select id="side">
+		<option value="white">White</option>
+		<option value="black">Black</option>
+		<option value="random">Random</option>
+	</select>
+	</div>
+	
+	<div class="board-wrapper">
+		<label>board</label>
+	</div>
+	<div class="eng-wrapper">
+		<label>Engine</label>
+		<select  id="engine" >
+			<option value="stockfish">Stockfish</option>
+			<option value="pleco">pleco</option>
+			<option value="lozza">lozza</option>
+			<option value="frozen-night">frozen-night</option>
+			<option value="mess">mess</option>
+			<option value="rustic">rustic</option>
+
+			<option value="trinket">trinket</option>
+			<option value="velvet">velvet</option>
+
+		</select>
+	</div>
+
+	<div class="self-wrapper">
+		<label>against</label>
+
+	</div>
+	<div class="random-wrapper">
+		<label>random</label>
+	</div>
+	<div class="position-wrapper">
+		<label>Fen</label>
+		<input type="text" name="" id="fen-new-input">
+	</div>
+
+	<button type="submit" id="dlg-new-game-btn">
+		Play
+	</button>
+</div>
+<script>
+ let modeContainer = document.querySelector("div.new-game")
+ let boardCon = document.querySelector("div.board-wrapper")
+ let engCon = document.querySelector("div.eng-wrapper")
+ let ramCon = document.querySelector("div.random-wrapper")
+ let selfCon = document.querySelector("div.self-wrapper")
+ let posCon = document.querySelector("div.position-wrapper") 
+ let combo = document.querySelector("select#mode")
+
+ function handleDiv(current) {
+	 current.style.display = "flex"
+	 current.classList.add("dlg-active")
+	 let divs = Array.from(document.querySelectorAll("div.new-game div"))
+	 let val = divs.length
+	 divsFilt = divs.slice(2, val)
+	 let index = divsFilt.indexOf(current)
+	 divsFilt.splice(index, 1)
+	 for (const div of divsFilt) {
+		 div.classList.remove("dlg-active")
+		div.style.display = "none"
+	 }
+ }
+
+ combo.onchange = update
+ function update() {
+	 let mode  = this.value;
+	 let = []
+	 if (mode == "board") {
+		handleDiv(boardCon)
+	 }
+	 if (mode == "engine") {
+		 handleDiv(engCon)
+	 }
+	 if (mode == "self") {
+		 handleDiv(selfCon)
+	 }
+	 if (mode == "random") {
+		 handleDiv(ramCon)
+	 }
+	 if (mode == "position") {
+		 handleDiv(posCon)
+	 }
+}
+</script>
