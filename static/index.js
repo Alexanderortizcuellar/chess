@@ -12,11 +12,16 @@ let moveNumber = 1;
 let coords = "";
 let turn = 0;
 let validMoves = [];
+let step = -1;
+let historyStep = -1;
 let initialFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 let loadedFen
 let fen = initialFen;
 document.querySelector("input#fen").value = initialFen
 
+window.onload = ()=>{
+	newGamedlg.showModal()
+}
 let pgnContainer = document.querySelector("div.pgn-container")
 let newGamedlg = document.querySelector("dialog.newgame-dlg")
 
@@ -28,12 +33,20 @@ let modeEntry = document.querySelector("select#mode")
 let sideEntry = document.querySelector("select#side")
 let eng1Entry = document.querySelector("select#engine")
 let positionFenEntry = document.querySelector("input#fen-new-input")
+
 let turnBoardBtn = document.querySelector(".turn-board")
 turnBoardBtn.addEventListener("click", () => {
 	swapBoard(fen)
 })
 
-
+let backBtn = document.querySelector("button.back-btn")
+backBtn.addEventListener("click", ()=>{
+	goBack()
+})
+let fwdBtn = document.querySelector("button.forwd-btn")
+fwdBtn.addEventListener("click", ()=>{
+	goFwd()
+})
 let newGamebtn = document.querySelector("button.newgame")
 
 newGamebtn.addEventListener("click", () => {
@@ -54,6 +67,11 @@ importBtn.addEventListener("click", ()=>{
 })
 
 
+let btnExport = document.querySelector("button.export")
+
+btnExport.addEventListener("click", ()=>{
+	console.log("4")
+})
 let importFenDlgBtn = document.querySelector("button#fen-dlg-btn")
 
 let fenDlgEntry = document.querySelector("input#fen-entry")
@@ -61,6 +79,7 @@ importFenDlgBtn.addEventListener("click", ()=>{
 	newGame(fenDlgEntry.value)
 	fen = fenDlgEntry.value;
 	loadedFen = fenDlgEntry.value
+	mode = "position"
 })
 
 let promBtns = document.querySelectorAll("dialog.dlg button")
@@ -125,6 +144,9 @@ function handleClick(evt) {
 		if (!checkTurn(turn, previous.style.backgroundImage)) {
 			return
 		}
+		if (step != historyStep){
+			return
+		}
 		// for invalid moves or promotion it returns false
 		if (!validateMove(previous.id+evt.id)) {
 			movePromotion = previous.id + evt.id
@@ -157,7 +179,9 @@ function handleClick(evt) {
 			return
 		}
 		//getMoves(fen)
+		if (step == historyStep){
 		hlValidMoves(evt.id)
+		}
 		evt.classList.add("active")
 	}
 	
@@ -224,13 +248,6 @@ function clearValidMovesClass() {
 	}
 }
 
-function moves(src, target) {
-	let srcSq = document.getElementById(src)
-	let targetSq = document.getElementById(target)
-	targetSq.style.backgroundImage = srcSq.style.backgroundImage
-	srcSq.style.backgroundImage = "url('')"
-
-}
 
 
 
@@ -411,7 +428,8 @@ function getPieceInfo(coord) {
 	]
 	let info = {
 		"color":"",
-		"type":""
+		"type":"",
+		"short-type":""
 	}
 	let p = getPiece(coord)
 	if (p == "url('')") {
@@ -425,9 +443,27 @@ function getPieceInfo(coord) {
 	for (const t of types) {
 		if (p.includes(t)) {
 			info["type"] = t
+			break
 		}
 	}
+	info["short-type"] = getShortType(p, info["color"], info["type"])
 	return info
+}
+
+function getShortType(piece, color, type) {
+	console.log(piece)
+	let pieceType = ""
+	if (piece.includes("king")) {
+		pieceType = "K"
+	} else if (piece.includes("knight")) {
+		pieceType = "N"
+	} else {
+		pieceType = type.slice(0,1)
+	}
+	if (color==="black") {
+		return pieceType.toLowerCase()
+	}
+	return pieceType.toUpperCase()
 }
 
 function importFen() {
@@ -440,37 +476,58 @@ function toPGN(previous, evt, move) {
 		moveNumber +=1
 		
 	}
+	historyStep += 1
+	step += 1
 	let coord = previous.id + evt.id + " ";
 	if (move.length > 4) {
 		coord = move+" "
 	}
 	coords += coord;
 	let pngField = document.querySelector("input#pgn");
-	//addMovesTodiv(coords)
 	pngField.value = coords
-	pgnFromCoords()
+	addMovesTodiv()
 	return coords
 }
 
-function addMovesTodiv(moves) {
-	con.innerHTML = ""
-	for (const move of moves) {
-		let span = document.createElement("span")
-		span.textContent = move
-		span.classList.add("pgn-move")
-		pgnContainer.appendChild(span)
+function addMovesTodiv() {
+	let moves = pgnFromCoordsJs()
+	pgnContainer.innerHTML = ""
+	for (const [key, value] of Object.entries(moves)) {
+		let moveCon = document.createElement("span")
+		moveCon.classList.add("pgn-move-con")
+		let number = document.createElement("span")
+		number.classList.add("pgn-move-int")
+		number.innerText = key
+		let moveStr = document.createElement("span")
+		moveStr.classList.add("pgn-move-str")
+		moveStr.innerText = value
+		moveCon.appendChild(number)
+		moveCon.appendChild(moveStr)
+		pgnContainer.appendChild(moveCon)	
 	}
 }
 
 function pgnFromCoordsJs() {
-	let coordsSplt = coords.split(" ")
-	let moves = coordsSplt.slice(0, -1)
-	let chess = new Chess()
+	let fenstr = initialFen
+	if (mode === 'position') {
+		fenstr = loadedFen
+	}
+	let pgnobjt = {
+	}
+	let moves  = coords.split(" ")
+	moves = moves.slice(0, -1)
+	console.log(fenstr)
+	let chess = new Chess(fenstr)
 	for (const move of moves) {
 		chess.move(move)
 	}
-	pgnContainer.innerHTML = chess.pgn()
-
+	let pattern = new RegExp(/\d\./)
+	let spltted = chess.pgn().split(pattern)
+	for (let i=1;i<spltted.length;i++) {
+		let movepgn = i.toString() + "."
+		pgnobjt[movepgn] = spltted[i] 
+	}
+	return pgnobjt
 }
 
 function pgnFromCoords() {
@@ -496,7 +553,8 @@ function newGame(fenstr) {
 	turn = 0;
 	fen = initialFen;
 	loadedFen = initialFen;
-
+	historyStep = -1
+	step = -1
 	document.querySelector("div.pgn-container").innerHTML = ""
 	document.querySelector("input#fen").value = initialFen
 	fetch("/newgame", {
@@ -515,6 +573,22 @@ function newGame(fenstr) {
 		});
 }
 
+function changeState(fenstr) {
+	fetch("/newgame", {
+		method: 'POST',
+		body: JSON.stringify({"fen":fenstr}),
+		headers: {'Content-Type': 'application/json'},
+
+	})
+		.then(response => response.json())
+		.then(data => {
+			document.querySelector("div.container").innerHTML = data["data"]
+			addCommand()
+		})
+		.catch(error => {
+			console.log(error);
+		});
+}
 
 function getMoves(fenstr) { 
 	fetch("/check", {
@@ -613,6 +687,7 @@ function doPromotion(move) {
 
 
 function handleProm(b) {
+	b.id = "p1"
 	let move = movePromotion;
 	document.querySelector("#"+move.slice(2, 4)).style.backgroundImage = b.style.backgroundImage
 	clearClass()
@@ -623,12 +698,15 @@ function handleProm(b) {
 	src.classList.add("movesFrom")
 	target.classList.add("movesTo")
 	toFen(getTurn(b.style.backgroundImage))
-	toPGN(src, target, move)
+	let piecepromType = getPieceInfo("p1")["short-type"].toLowerCase()
+	toPGN(src, target, move+piecepromType)
 			// to review
 	turn += 1
 	clearValidMovesClass()
 	getEngineMove(fen)
+	b.id = ""
 }
+
 
 // automatic moves stuff
 // to control the moves when they come from an engine
@@ -763,6 +841,7 @@ function configureGame() {
 	}
 	if (modeEntry.value==="position"){
 		newGame(positionFenEntry.value)
+		mode = modeEntry.value
 		loadedFen = positionFenEntry.value
 		fen = loadedFen
 	}
@@ -785,19 +864,91 @@ function getEngineMove() {
 
 }
 
-let c = 0;
-function engVSeng() {
-	if (c<10) {
-		setTimeout(()=>{
-			getEngineMove()
-		},1000)
-		engVSeng()
+function playMoves(board) {
+	let moves = coords.split(" ")
+	moves = moves.slice(0,-1)
+	for (const move of moves) {
+		board.move(move)
 	}
-	
 }
 
-let btnExport = document.querySelector("button.export")
+function goBack() {
+	console.log(`back before ${historyStep}`)
+	let fenstr
+	if (mode==='position') {
+		fenstr = loadedFen
+	} else {
+		fenstr = initialFen
+	}
+	let board = new Chess(fenstr)
+	playMoves(board)
+	let history = board.history({"verbose":true})
+	if (historyStep===-1) {
+		return
+	}
+	let stateFen = history[historyStep]["before"]
+	changeState(stateFen)
+	fen = stateFen
+	let limit = historyStep -1
+	if (limit != -1) {
+		historyStep -=1
+		turn +=1
+	}
 
-btnExport.addEventListener("click", ()=>{
-	engVSeng()
-})
+	console.log(`back after ${historyStep}`)
+
+}
+
+function goFwd() {
+	console.log(`fwd before ${historyStep}`)
+	let fenstr
+	if (mode==='position') {
+		fenstr = loadedFen
+	} else {
+		fenstr = initialFen
+	}
+	let board = new Chess(fenstr)
+	playMoves(board)
+	let history = board.history({"verbose":true})
+	if (historyStep===step+1) {
+		return
+	}
+	if (historyStep===-1) {
+		return
+	}
+	let stateFen = history[historyStep]["after"]
+	changeState(stateFen)
+	fen = stateFen
+	let limit = historyStep +1
+	if (limit <= step) {
+		historyStep +=1
+		turn +=1
+	}
+	console.log(`fwd  after ${historyStep}`)
+}
+
+function gofwdTest() {
+	let board = new Chess()
+	playMoves(board)
+	let history = board.history()
+	if (historyStep <= history.length -1) {
+		historyStep++;
+		let stateFen = history[historyStep]["after"]
+		changeState(stateFen)
+		turn += 1
+	}
+}
+
+
+function gobackTest() {
+	let board = new Chess()
+	playMoves(board)
+	let history = board.history()
+	if (historyStep>0) {
+		historyStep++;
+		let stateFen = history[historyStep]["before"]
+		changeState(stateFen)
+		turn += 1
+	}
+}
+
