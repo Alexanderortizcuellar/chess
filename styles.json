@@ -1,0 +1,10 @@
+{
+	"green-chesscom":{
+		"light":"#eeeed3",
+		"dark":"#759655"
+	},
+	"brown-lichess": {
+		"light":"",
+		"dark":""
+	}
+}

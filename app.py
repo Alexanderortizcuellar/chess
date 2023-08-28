@@ -2,11 +2,15 @@ import itertools
 import string
 import subprocess
 import os
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, redirect, render_template, request, send_file
 import chess
+import httpx
 
 
 app = Flask(__name__)
+
+
+process = subprocess.Popen("lila-gif")
 
 
 def add_state(board: list, quality):
@@ -75,6 +79,7 @@ def get_promotions(board: list[list]):
     promotions = {}
     for color in ["white", "black"]:
         promotions[color[0]] = color_solver_prom(color, board)
+    print(promotions)
     return promotions
 
 
@@ -149,6 +154,15 @@ def expand_row(row: str):
     return new_row
 
 
+def fen_to_image(fen):
+    path = "static/image.gif"
+    fen = fen.split(" ")[0]
+    url = f"http://localhost:6175/image.gif?fen={fen}"
+    response = httpx.get(url)
+    with open(path, "wb") as f:
+        f.write(response.content)
+
+
 # routes start here
 @app.route("/")
 def home():
@@ -180,6 +194,8 @@ def check():
 def new_game():
     fen = request.get_json().get("fen")
     board = fen_to_board(fen)
+    img = fen_to_image(fen)
+    print(img)
     t = render_template("board.html", board=board)
     return jsonify({"data": t})
 
@@ -255,3 +271,10 @@ def import_fen():
             "index.html",
             board=board)
     return jsonify({"data": t})
+
+
+@app.route("/download", methods=["POST"])
+def download_image():
+    fen = request.get_json().get("fen")
+    fen_to_image(fen)
+    return jsonify({"data": "200"})

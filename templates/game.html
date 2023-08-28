@@ -27,21 +27,18 @@
 	<div class="eng-wrapper">
 		<label>Engine</label>
 		<select  id="engine" >
-			<option value="stockfish">Stockfish</option>
-			<option value="pleco">pleco</option>
-			<option value="lozza">lozza</option>
-			<option value="frozen-night">frozen-night</option>
-			<option value="mess">mess</option>
-			<option value="rustic">rustic</option>
-
-			<option value="trinket">trinket</option>
-			<option value="velvet">velvet</option>
-
+			{% include 'engines.html' %}
 		</select>
 	</div>
 
 	<div class="self-wrapper">
-		<label>against</label>
+		<select  id="eng1">
+			{% include 'engines.html' %}
+		</select>
+		<label>Vs</label>
+		<select  id="eng2">
+			{% include 'engines.html' %}
+		</select>
 
 	</div>
 	<div class="random-wrapper">

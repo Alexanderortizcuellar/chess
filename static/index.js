@@ -1,9 +1,10 @@
 import { Chess } from './js/dist/esm/chess.js'
-
+var movemp3 = new Audio("/static/move.mp3")
+var capturemp3 = new Audio("/static/capture.mp3")
+var newgamemp3 = new Audio("/static/dong.mp3")
 const sqs = document.querySelectorAll('button.sq');
-let addedEvent = false;
-let engineWhite
-let engineBlack
+let engine1
+let engine2
 let mode
 let depth
 let movePromotion // this holds the value of the move for the handleProm function 
@@ -11,7 +12,6 @@ let whitefirst = false;
 let moveNumber = 1;
 let coords = "";
 let turn = 0;
-let validMoves = [];
 let step = -1;
 let historyStep = -1;
 let initialFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
@@ -23,6 +23,7 @@ window.onload = ()=>{
 	newGamedlg.showModal()
 }
 let pgnContainer = document.querySelector("div.pgn-container")
+
 let newGamedlg = document.querySelector("dialog.newgame-dlg")
 
 let newGameDlgBtn = document.querySelector("button#dlg-new-game-btn")
@@ -32,6 +33,8 @@ newGameDlgBtn.addEventListener("click", ()=>{
 let modeEntry = document.querySelector("select#mode")
 let sideEntry = document.querySelector("select#side")
 let eng1Entry = document.querySelector("select#engine")
+let selfEng1Entry = document.querySelector("select#eng1")
+let selfEng2Entry = document.querySelector("select#eng2")
 let positionFenEntry = document.querySelector("input#fen-new-input")
 
 let turnBoardBtn = document.querySelector(".turn-board")
@@ -46,6 +49,16 @@ backBtn.addEventListener("click", ()=>{
 let fwdBtn = document.querySelector("button.forwd-btn")
 fwdBtn.addEventListener("click", ()=>{
 	goFwd()
+})
+
+let fullFwdBtn = document.querySelector("button.full-forwd")
+fullFwdBtn.addEventListener("click", ()=>{  
+	goToMove("last")
+})
+
+let fullBackBtn = document.querySelector("button.full-back")
+fullBackBtn.addEventListener("click", ()=>{  
+	goToMove(0)
 })
 let newGamebtn = document.querySelector("button.newgame")
 
@@ -68,10 +81,29 @@ importBtn.addEventListener("click", ()=>{
 
 
 let btnExport = document.querySelector("button.export")
+let dlgExport = document.querySelector("dialog.export-dlg")
 
 btnExport.addEventListener("click", ()=>{
-	console.log("4")
+	dlgExport.showModal()
 })
+
+let exportPgnBtn = document.querySelector("button#export-pgn")
+exportPgnBtn.addEventListener("click", ()=>{
+	let fenstr = resolveFen()
+	let board = new Chess(fenstr)
+	playMoves(board)
+	copyToClipBoard(board.pgn())
+})
+let exportFenBtn = document.querySelector("button#export-fen")
+exportFenBtn.addEventListener("click", ()=>{
+	copyToClipBoard(fen)
+})
+
+let exportImgBtn = document.querySelector("button#export-img")
+exportImgBtn.addEventListener("click", ()=>{
+	downloadImage()
+})
+
 let importFenDlgBtn = document.querySelector("button#fen-dlg-btn")
 
 let fenDlgEntry = document.querySelector("input#fen-entry")
@@ -89,6 +121,17 @@ let promBtns = document.querySelectorAll("dialog.dlg button")
 		})
 	}
 
+function addCmdmoves() {
+	let movesBtns = document.querySelectorAll("button.pgn-move-str")
+	let count = 0;
+	for (const b of movesBtns) {
+		b.id = count
+		b.addEventListener("click", ()=>{
+		goToMove(parseInt(b.id))
+		})
+		count ++
+	}
+}
 function addCommand() {
 	let btns = document.querySelectorAll("button.sq")
 	for (const sq of btns) {
@@ -104,21 +147,6 @@ function addCommand() {
 
 addCommand()
 
-function slog(datos, endpoint) {
-	fetch(endpoint, {
-		method: 'POST',
-		body: JSON.stringify({datos}),
-		headers: {'Content-Type': 'application/json'},
-
-	})
-		.then(response => response.json())
-		.then(data => {
-			console.log(data)
-		})
-		.catch(error => {
-			console.log(error);
-		});
-}
 function getBoard(elements) {
 	let stateBoard = [];
 	for (const element of elements) {
@@ -165,11 +193,12 @@ function handleClick(evt) {
 		let who = getTurn(evt.style.backgroundImage)
 		toPGN(previous, evt, previous.id+evt.id)
 		toFen(who)
+		clearCheck()
+		highlightCheck(fen)
 		turn +=1
-		//getRandomMove(fen)
 		clearValidMovesClass()
-		//getEngineMove(fen)
-		pgnFromCoordsJs()
+		movemp3.play()
+		play()
 	} else { 
 		// if there's nothing with the active class
 	if (evt.style.backgroundImage == 'url("")') {
@@ -187,6 +216,7 @@ function handleClick(evt) {
 	
 }
 
+
 function handleCastle(move) {
 	let pos = [["e1","h1","g1","f1"],
 		   ["e1","a1","c1","d1"],
@@ -200,7 +230,8 @@ function handleCastle(move) {
 	}
 	return false
 }
-	
+
+
 
 function getPiece(coord) {
 	let piece = document.querySelector("#"+`${coord}`).style.backgroundImage
@@ -451,7 +482,6 @@ function getPieceInfo(coord) {
 }
 
 function getShortType(piece, color, type) {
-	console.log(piece)
 	let pieceType = ""
 	if (piece.includes("king")) {
 		pieceType = "K"
@@ -493,36 +523,50 @@ function addMovesTodiv() {
 	let moves = pgnFromCoordsJs()
 	pgnContainer.innerHTML = ""
 	for (const [key, value] of Object.entries(moves)) {
+		let mvs = value.trim().split(" ")
 		let moveCon = document.createElement("span")
 		moveCon.classList.add("pgn-move-con")
 		let number = document.createElement("span")
 		number.classList.add("pgn-move-int")
 		number.innerText = key
-		let moveStr = document.createElement("span")
-		moveStr.classList.add("pgn-move-str")
-		moveStr.innerText = value
+		let moveStrW = document.createElement("button")
+		let moveStrB = document.createElement("button")
+		moveStrW.classList.add("pgn-move-str")
+		moveStrW.innerText = mvs[0]
 		moveCon.appendChild(number)
-		moveCon.appendChild(moveStr)
-		pgnContainer.appendChild(moveCon)	
+		moveCon.appendChild(moveStrW)
+		if (mvs.length > 1) {
+			moveStrB.innerText = mvs[1]
+		moveStrB.classList.add("pgn-move-str")
+			moveCon.appendChild(moveStrB)
+		}
+		pgnContainer.appendChild(moveCon)
 	}
+	addCmdmoves()
 }
 
+function numberCoords(counter) {
+	if (counter == 0) {
+		return [counter, counter+1]
+	} else {
+		return [counter+1, counter+2]
+	}
+}
 function pgnFromCoordsJs() {
 	let fenstr = initialFen
 	if (mode === 'position') {
 		fenstr = loadedFen
 	}
-	let pgnobjt = {
-	}
+	let pgnobjt = {}
 	let moves  = coords.split(" ")
 	moves = moves.slice(0, -1)
-	console.log(fenstr)
 	let chess = new Chess(fenstr)
 	for (const move of moves) {
 		chess.move(move)
 	}
 	let pattern = new RegExp(/\d\./)
 	let spltted = chess.pgn().split(pattern)
+
 	for (let i=1;i<spltted.length;i++) {
 		let movepgn = i.toString() + "."
 		pgnobjt[movepgn] = spltted[i] 
@@ -530,22 +574,6 @@ function pgnFromCoordsJs() {
 	return pgnobjt
 }
 
-function pgnFromCoords() {
-	fetch("/pgn", {
-		method: 'POST',
-		body: JSON.stringify({"coords":coords, "fen":loadedFen}),
-		headers: {'Content-Type': 'application/json'},
-
-	})
-		.then(response => response.json())
-		.then(data => {
-			//addMovesTodiv(data["pgn"])
-			console.log(data)
-		})
-		.catch(error => {
-			console.log(error);
-		});
-}
 
 function newGame(fenstr) {
 	moveNumber = 1;
@@ -585,25 +613,6 @@ function changeState(fenstr) {
 			document.querySelector("div.container").innerHTML = data["data"]
 			addCommand()
 		})
-		.catch(error => {
-			console.log(error);
-		});
-}
-
-function getMoves(fenstr) { 
-	fetch("/check", {
-		method: 'POST',
-		body: JSON.stringify({"fen":fenstr}),
-		headers: {'Content-Type': 'application/json'},
-
-	})
-		.then(response => response.json())
-		.then(data => { 
-			validMoves = data["data"]
-			let current = document.querySelector("button.active")
-			hlValidMoves(current.id)
-		})
-
 		.catch(error => {
 			console.log(error);
 		});
@@ -658,9 +667,44 @@ function hlValidMoves(current) {
 	}
 }
 
+function highlightCheck(fenstr) {
+	let king
+	let board = new Chess(fenstr)
+	if (board.isCheck()) {
+		if (board.turn()=="b") {
+			king = locateKing("black")	
+		} else {
+			king = locateKing("white")
+	}
+		king.style.boxShadow = "inset 0px 0px 14px 2px red"
+
+}
+}
+
+function clearCheck() {
+	let sqs = document.querySelectorAll("button.sq")
+	for (const sq of sqs) {
+		sq.style.boxShadow  = "none"
+	}
+
+}
+
+function locateKing(color) {
+	let sqs = document.querySelectorAll("button.sq")
+	for (const sq of sqs) {
+		let info = getPieceInfo(sq.id)
+		if (info.type == "king" 
+			&& 
+		info.color == color) {
+		    return sq	
+		}
+	}
+}
+
 // function to create promotion events
 // who is to check what color is having the promotion it uses the event when first clicking the square after verifying
 // valid moves in the 'getMoves' function
+
 
 // now to access the move I needed to create a global variable to hold its value since we are executing a script when the dialog buttons are pressed.
 
@@ -676,10 +720,12 @@ function doPromotion(move) {
 		blackCon.classList.remove("prom-active")
 		whiteCon.classList.add("prom-active")
 		blackCon.style.display = "none"
+		whiteCon.style.display = "flex"
 	} else {
 		whiteCon.classList.remove("prom-active")
 		blackCon.classList.add("prom-active")
 		whiteCon.style.display = "none"
+		blackCon.style.display = "flex"
 	}
 	let dlg = document.querySelector("dialog.dlg");
 	dlg.showModal();
@@ -700,10 +746,11 @@ function handleProm(b) {
 	toFen(getTurn(b.style.backgroundImage))
 	let piecepromType = getPieceInfo("p1")["short-type"].toLowerCase()
 	toPGN(src, target, move+piecepromType)
-			// to review
-	turn += 1
+	clearCheck()
+	highlightCheck(fen)
 	clearValidMovesClass()
-	getEngineMove(fen)
+	turn += 1
+	play()
 	b.id = ""
 }
 
@@ -712,24 +759,31 @@ function handleProm(b) {
 // to control the moves when they come from an engine
 
 function doPromotionAut(move) {
+	let path = "/static/svg/2048/"
 	let p = document.querySelectorAll("dialog.dlg div.white-prom button")
 	let proms = {
-		"q": p[0].style.backgroundImage,
-		"b":p[1].style.backgroundImage,
-		"n":p[2].style.backgroundImage
+		"q":"queen_white.png",
+		"b":"bishop_white.png",
+		"n":"knight_white.png",
+		"r":"rook_white.png"
 	}
 	let src = document.getElementById(move.slice(0,2))
 	let target = document.getElementById(move.slice(2,4))
-	let promPiece = proms[move.slice(4)]
+	let promPiece = path+ proms[move.slice(4)]
 	if (move.includes("1")) {
-		promPiece = promPiece.replace("white", "black")
+		promPiece = path+promPiece.replace("white", "black")
 	}
 	src.style.backgroundImage = "url('')"
-	target.style.backgroundImage = promPiece;
+	target.style.backgroundImage = `url('${promPiece}')`;
 	let who = getTurn(src.style.backgroundImage)
 	toFen(who)
 	toPGN(src, target, move)
+	clearCheck()
+	highlightCheck(fen)
 	turn+=1
+	if (mode==="self") {
+		play()
+	}
 }
 
 
@@ -749,27 +803,20 @@ function updateState(move) {
 	let who = getTurn(src.style.backgroundImage)
 	toFen(who)
 	toPGN(src, target, move)
+	clearCheck()
+	highlightCheck(fen)
 	turn+=1
+	movemp3.play()
+	if (mode==="self") {
+		play()
+	}
 }
 
 // this function gets a random move from the list of allowed moves
 function getRandomMove(fenstr) {
-	fetch("/check", {
-		method: 'POST',
-		body: JSON.stringify({"fen":fenstr}),
-		headers: {'Content-Type': 'application/json'},
-
-	})
-		.then(response => response.json())
-		.then(data => { 
-			let moves = data["data"]
-			let index = Math.floor(Math.random() * moves.length)
-			updateState(moves[index])
-		})
-
-		.catch(error => {
-			console.log(error);
-		});
+	let moves = getMovesJs(fen)
+	let rand = Math.floor(Math.random() * moves.length)
+	return moves[rand]
 }
 
 //get engine move through fetch call
@@ -849,10 +896,54 @@ function configureGame() {
 		newGame(initialFen)
 		mode=modeEntry.value
 	}
+	if (modeEntry.value=="engine") {
+		newGame(initialFen)
+		mode=modeEntry.value
+		engine1 = eng1Entry.value
+	}
+	if (modeEntry.value=="self") {
+		newGame(initialFen)
+		mode = "self"
+		engine1 = selfEng1Entry.value
+		engine2 = selfEng2Entry.value
+	}
+	newgamemp3.play()
 }
 
+function play() {
+	if (mode=="board") {
+		return
+	}
+	if (mode=="engine") {
+		getEngineMove(engine1)
+	}
+	if (mode=="random") {
+		let move = getRandomMove(fen)
+		updateState(move)
+	}
+	if (mode=="position") {
+		return
+	}
+	if (mode=="self") {
+		if (turn % 2 ==0) {
+		getEngineMove(engine1)
+		} else {
+		getEngineMove(engine2)
+		}
+	}
+}
+function resolveFen() {
+	if (mode=="position") {
+		return loadedFen
+	} else {
+		return initialFen
+	}
+}
 
-function getEngineMove() {
+function playSelf() {
+
+}
+function getEngineMove(engine) {
 	let who = turnStrFromInt(turn)
 	toFen(who)
 	let worker = new Worker("static/worker.js")
@@ -860,7 +951,7 @@ function getEngineMove() {
 		let move = e.data["data"]["data"]
 		updateState(move)
 	}
-	worker.postMessage({"engine":"pleco", "fen":fen})
+	worker.postMessage({"engine":engine, "fen":fen})
 
 }
 
@@ -872,83 +963,88 @@ function playMoves(board) {
 	}
 }
 
-function goBack() {
-	console.log(`back before ${historyStep}`)
-	let fenstr
-	if (mode==='position') {
-		fenstr = loadedFen
-	} else {
-		fenstr = initialFen
-	}
-	let board = new Chess(fenstr)
-	playMoves(board)
-	let history = board.history({"verbose":true})
-	if (historyStep===-1) {
-		return
-	}
-	let stateFen = history[historyStep]["before"]
-	changeState(stateFen)
-	fen = stateFen
-	let limit = historyStep -1
-	if (limit != -1) {
-		historyStep -=1
-		turn +=1
-	}
-
-	console.log(`back after ${historyStep}`)
-
-}
-
 function goFwd() {
-	console.log(`fwd before ${historyStep}`)
-	let fenstr
-	if (mode==='position') {
-		fenstr = loadedFen
-	} else {
-		fenstr = initialFen
-	}
+	let fenstr = resolveFen()
 	let board = new Chess(fenstr)
 	playMoves(board)
 	let history = board.history({"verbose":true})
-	if (historyStep===step+1) {
-		return
+	if (historyStep < history.length-1) {
+		historyStep += 1
+		let fencur = history[historyStep].after
+		fen = fencur
+		changeState(fencur)
+		movemp3.play()
 	}
-	if (historyStep===-1) {
-		return
-	}
-	let stateFen = history[historyStep]["after"]
-	changeState(stateFen)
-	fen = stateFen
-	let limit = historyStep +1
-	if (limit <= step) {
-		historyStep +=1
-		turn +=1
-	}
-	console.log(`fwd  after ${historyStep}`)
+
 }
 
-function gofwdTest() {
-	let board = new Chess()
+
+function goBack() {
+	let fenstr = resolveFen()
+	let board = new Chess(fenstr)
 	playMoves(board)
-	let history = board.history()
-	if (historyStep <= history.length -1) {
-		historyStep++;
-		let stateFen = history[historyStep]["after"]
-		changeState(stateFen)
-		turn += 1
+	let history = board.history({"verbose":true})
+	if (historyStep > 0) {
+		historyStep -= 1
+		let fencur = history[historyStep]["after"]
+		fen = fencur
+		changeState(fencur)
 	}
 }
 
-
-function gobackTest() {
-	let board = new Chess()
+function goToMove(move) {
+	let fenstr = resolveFen()
+	let board = new Chess(fenstr)
 	playMoves(board)
-	let history = board.history()
-	if (historyStep>0) {
-		historyStep++;
-		let stateFen = history[historyStep]["before"]
-		changeState(stateFen)
-		turn += 1
+	let history = board.history({"verbose":true})
+	if (move == "last") {
+	    move = history.length - 1
 	}
+	let fencur = history[move].after
+	changeState(fencur)
+	historyStep = move
+	fen = fencur
 }
 
+function fixHistory(history) {
+	let fencur = resolveFen()
+	let fenObjt = {"before":fencur,
+		"after":fencur}
+	history.splice(0, 0, fenObjt)
+
+}
+
+function copyToClipBoard(text) {
+	navigator.clipboard.writeText(text).then(()=>{
+		console.log(text)
+	}, ()=>{
+		console.log("error")
+	})
+}
+
+function download() {
+	const a = document.createElement("a")
+	const url = "/static/image.gif"
+	a.href = url
+	a.download = url.split("/").pop()
+	document.body.appendChild(a)
+	a.click()
+	document.body.removeChild(a)
+}
+
+function downloadImage() {
+	fetch("/download", {
+		method: 'POST',
+		body: JSON.stringify({"fen":fen}),
+		headers: {'Content-Type': 'application/json'},
+
+	})
+		.then(response => response.json())
+		.then(data => { 
+			download()
+		})
+
+		.catch(error => {
+			console.log(error);
+		});
+}
