@@ -1,4 +1,5 @@
 import { Chess } from './js/dist/esm/chess.js'
+import { Board } from './board.js'
 var movemp3 = new Audio("/static/move.mp3")
 var capturemp3 = new Audio("/static/capture.mp3")
 var newgamemp3 = new Audio("/static/dong.mp3")
@@ -352,8 +353,8 @@ function processRow(row) {
 		if (item==="") {
 			counter+=1;
 		} else {
-				if (counter == 0) {
-				counter = 0;
+		if (counter == 0) {
+			counter = 0;
 			} else {
 				rowStr += counter.toString();
 				counter = 0;
@@ -545,13 +546,6 @@ function addMovesTodiv() {
 	addCmdmoves()
 }
 
-function numberCoords(counter) {
-	if (counter == 0) {
-		return [counter, counter+1]
-	} else {
-		return [counter+1, counter+2]
-	}
-}
 function pgnFromCoordsJs() {
 	let fenstr = initialFen
 	if (mode === 'position') {
@@ -610,8 +604,10 @@ function changeState(fenstr) {
 	})
 		.then(response => response.json())
 		.then(data => {
-			document.querySelector("div.container").innerHTML = data["data"]
-			addCommand()
+			//document.querySelector("div.container").innerHTML = data["data"]
+			let b = new Board(fenstr)
+			b.changeState(document.querySelector("div.container"))
+			//addCommand()
 		})
 		.catch(error => {
 			console.log(error);
@@ -771,7 +767,7 @@ function doPromotionAut(move) {
 	let target = document.getElementById(move.slice(2,4))
 	let promPiece = path+ proms[move.slice(4)]
 	if (move.includes("1")) {
-		promPiece = path+promPiece.replace("white", "black")
+		promPiece = promPiece.replace("white", "black")
 	}
 	src.style.backgroundImage = "url('')"
 	target.style.backgroundImage = `url('${promPiece}')`;
@@ -819,23 +815,6 @@ function getRandomMove(fenstr) {
 	return moves[rand]
 }
 
-//get engine move through fetch call
-function getEngineMove1(fenstr) {
-	fetch("/eval", {
-		method: 'POST',
-		body: JSON.stringify({"fen":fenstr, "engine":"mess"}),
-		headers: {'Content-Type': 'application/json'},
-
-	})
-		.then(response => response.json())
-		.then(data => { 
-			updateState(data["data"])
-		})
-
-		.catch(error => {
-			console.log(error);
-		});
-}
 
 function getJsEngineMove() {
 	let who = turnStrFromInt(turn)
@@ -940,9 +919,7 @@ function resolveFen() {
 	}
 }
 
-function playSelf() {
 
-}
 function getEngineMove(engine) {
 	let who = turnStrFromInt(turn)
 	toFen(who)
@@ -1048,3 +1025,4 @@ function downloadImage() {
 			console.log(error);
 		});
 }
+

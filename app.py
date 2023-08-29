@@ -194,8 +194,6 @@ def check():
 def new_game():
     fen = request.get_json().get("fen")
     board = fen_to_board(fen)
-    img = fen_to_image(fen)
-    print(img)
     t = render_template("board.html", board=board)
     return jsonify({"data": t})
 
