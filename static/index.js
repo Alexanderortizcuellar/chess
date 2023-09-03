@@ -168,16 +168,20 @@ function handleClick(evt) {
 			return
 		}
 		if (previous.style.backgroundImage == "url('')"){
+			console.log("same")
 			return
 		}
 		if (!checkTurn(turn, previous.style.backgroundImage)) {
+			console.log("not turn")
 			return
 		}
 		if (step != historyStep){
+			console.log("different steps")
 			return
 		}
 		// for invalid moves or promotion it returns false
 		if (!validateMove(previous.id+evt.id)) {
+			console.log(previous.id +evt.id)
 			movePromotion = previous.id + evt.id
 			return
 		}
@@ -577,46 +581,26 @@ function newGame(fenstr) {
 	loadedFen = initialFen;
 	historyStep = -1
 	step = -1
+	clearValidMovesClass()
+	clearCheck()
+	clearClass()
 	document.querySelector("div.pgn-container").innerHTML = ""
 	document.querySelector("input#fen").value = initialFen
-	fetch("/newgame", {
-		method: 'POST',
-		body: JSON.stringify({"fen":fenstr}),
-		headers: {'Content-Type': 'application/json'},
-
-	})
-		.then(response => response.json())
-		.then(data => {
-			document.querySelector("div.container").innerHTML = data["data"]
-			addCommand()
-		})
-		.catch(error => {
-			console.log(error);
-		});
+	let b = new Board(fenstr)
+	b.changeState(document.querySelector("div.container"))
 }
 
 function changeState(fenstr) {
-	fetch("/newgame", {
-		method: 'POST',
-		body: JSON.stringify({"fen":fenstr}),
-		headers: {'Content-Type': 'application/json'},
-
-	})
-		.then(response => response.json())
-		.then(data => {
-			//document.querySelector("div.container").innerHTML = data["data"]
-			let b = new Board(fenstr)
-			b.changeState(document.querySelector("div.container"))
-			//addCommand()
-		})
-		.catch(error => {
-			console.log(error);
-		});
+	let b = new Board(fenstr)
+	b.changeState(document.querySelector("div.container"))
+	clearCheck()
+	clearValidMovesClass()
+	clearClass()
 }
 
-function getMovesJs(fenstr) {
+function getMovesJs(fenstring) {
 	let moves = []
-	let board = new Chess(fenstr)
+	let board = new Chess(fenstring)
 	let movesData = board.moves({verbose:true})
 	for (const field of movesData) {
 		moves.push(field["lan"])
@@ -627,6 +611,9 @@ function getMovesJs(fenstr) {
 function validateMove(move) {
 	// allowed moves has the suffix of the promotion piece
 	let moves = getMovesJs(fen)
+
+	console.log(fen)
+	console.log(moves)
 	for (const m of moves) {
 		if (m.slice(0,4) == move){
 		  if (m.length > 4) {
@@ -793,10 +780,10 @@ function updateState(move) {
 	let src = document.querySelector("#"+move.slice(0,2))
 	let target = document.getElementById(move.slice(2, 4))
 	target.style.backgroundImage = src.style.backgroundImage
+	let who = getTurn(src.style.backgroundImage)
 	src.style.backgroundImage = "url('')"
 	src.classList.add("movesFrom")
 	target.classList.add("movesTo")
-	let who = getTurn(src.style.backgroundImage)
 	toFen(who)
 	toPGN(src, target, move)
 	clearCheck()
@@ -879,6 +866,9 @@ function configureGame() {
 		newGame(initialFen)
 		mode=modeEntry.value
 		engine1 = eng1Entry.value
+		if (sideEntry.value=="black") {
+			getEngineMove(engine1)
+		}
 	}
 	if (modeEntry.value=="self") {
 		newGame(initialFen)
