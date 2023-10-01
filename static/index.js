@@ -90,10 +90,8 @@ btnExport.addEventListener("click", ()=>{
 
 let exportPgnBtn = document.querySelector("button#export-pgn")
 exportPgnBtn.addEventListener("click", ()=>{
-	let fenstr = resolveFen()
-	let board = new Chess(fenstr)
-	playMoves(board)
-	copyToClipBoard(board.pgn())
+	let currentPgn = getPgn()
+	copyToClipBoard(currentPgn)
 })
 let exportFenBtn = document.querySelector("button#export-fen")
 exportFenBtn.addEventListener("click", ()=>{
@@ -105,7 +103,12 @@ exportImgBtn.addEventListener("click", ()=>{
 	downloadImage()
 })
 
+let saveBtn = document.querySelector("button#save")
+saveBtn.addEventListener("click", ()=>{
+	save()
+})
 let importFenDlgBtn = document.querySelector("button#fen-dlg-btn")
+
 
 let fenDlgEntry = document.querySelector("input#fen-entry")
 importFenDlgBtn.addEventListener("click", ()=>{
@@ -205,7 +208,7 @@ function handleClick(evt) {
 		movemp3.play()
 		play()
 	} else { 
-		// if there's nothing with the active class
+		// if there's nothing with the activide class
 	if (evt.style.backgroundImage == 'url("")') {
 		return
 		}
@@ -217,6 +220,7 @@ function handleClick(evt) {
 		hlValidMoves(evt.id)
 		}
 		evt.classList.add("active")
+		getPosition(evt.id)
 	}
 	
 }
@@ -375,23 +379,6 @@ function processRow(row) {
 function checkRooks() {
 	let castleRights = checkCastle()
 	let caststr =  "";
-	let moves = coords;
-	if (!moves.includes("e1")) {
-		if (!moves.includes("h1")) {
-			caststr += "K"
-		}
-		if (!moves.includes("a1")) {
-			caststr += "Q"
-		}
-	}
-	if (!moves.includes("e8")) {
-		if (!moves.includes("h1")) {
-			caststr += "k"
-		}
-		if (!moves.includes("a8")) {
-			caststr += "q"
-		}
-	}
 	if (1===1) {
 		caststr = castleRights
 		return caststr
@@ -743,7 +730,6 @@ function handleProm(b) {
 
 function doPromotionAut(move) {
 	let path = "/static/svg/2048/"
-	let p = document.querySelectorAll("dialog.dlg div.white-prom button")
 	let proms = {
 		"q":"queen_white.png",
 		"b":"bishop_white.png",
@@ -909,6 +895,13 @@ function resolveFen() {
 	}
 }
 
+function getPgn() {
+	let fenstr = resolveFen()
+	let board = new Chess(fenstr)
+	playMoves(board)
+	return board.pgn()
+}
+
 
 function getEngineMove(engine) {
 	let who = turnStrFromInt(turn)
@@ -973,13 +966,6 @@ function goToMove(move) {
 	fen = fencur
 }
 
-function fixHistory(history) {
-	let fencur = resolveFen()
-	let fenObjt = {"before":fencur,
-		"after":fencur}
-	history.splice(0, 0, fenObjt)
-
-}
 
 function copyToClipBoard(text) {
 	navigator.clipboard.writeText(text).then(()=>{
@@ -1009,6 +995,39 @@ function downloadImage() {
 		.then(response => response.json())
 		.then(data => { 
 			download()
+		})
+
+		.catch(error => {
+			console.log(error);
+		});
+}
+
+function getPosition(coord) {
+	let element = document.querySelector(`button#${coord}`)
+	let pos = element.getBoundingClientRect()
+	let t = ""
+	let info = pos.toJSON()
+
+	for (const [k,v] of Object.entries(info)) {
+	t += `${k}: ${v}\n`
+	}
+	//document.querySelector("span.info").innerText = t
+}
+
+function save() {
+	let currentpgn = getPgn()
+	let white = "white"
+	let black = engine1
+	let winner = "-"
+	fetch("/save", {
+		method: 'POST',
+		body: JSON.stringify({"white":white,"black":black,"pgn":currentpgn,"winner":winner}),
+		headers: {'Content-Type': 'application/json'},
+
+	})
+		.then(response => response.json())
+		.then(data => { 
+			console.log("saved!")
 		})
 
 		.catch(error => {

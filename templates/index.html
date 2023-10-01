@@ -7,9 +7,13 @@
 		<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
 		<title>chess</title>
 		<script type="module" src="static/js/dist/esm/chess.js"></script>
-	<style> 
 
-		</style>
+	<style> 
+.options {
+	color:white;
+	font-size: 1.6em;
+}
+	</style>
 	</head>
 	<body>
 		<dialog class="dlg">
@@ -66,12 +70,14 @@
 			<div class="pgn"></div>
 
 		</div>
+		<span id="oponent1" class="player"></span>
 		<div class="container">
 			{% for x in sqs %}
 			
 			<button class="sq {{ x[0] }}" id="{{ x[1] }}" style="background-image:url('{{ x[2] }}');background-position:center;background-repeat:no-repeat;"> </button>
 			{% endfor %}
 		</div>
+		<span id="oponent2" class="player"></span>
 		<div class="row-cmd">
 			<button class="turn-board"></button>
 			<button class="full-back"></button>
@@ -81,11 +87,15 @@
 
 		</div>
 		<div class="row-cmd">
+			<button class="options">{:}</button>
 			<button class="export"></button>
 			<button class="help"></button>
 			<button class="import"></button>
 		</div>
 		<button class="newgame">new Game</button>
+		<div>
+			<span class="info"></span>
+		</div>
 		<div class="test">
 			<div><label for="pgn">pgn</label><input type="text" name="pgn" id="pgn"></div>
 			<div><label for="fen">fen</label><input type="text" name="fen" id="fen"></div>

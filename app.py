@@ -2,15 +2,61 @@ import itertools
 import string
 import subprocess
 import os
-from flask import Flask, jsonify, redirect, render_template, request, send_file
+from flask import Flask, jsonify, render_template, request
 import chess
 import httpx
+import sqlite3
+import datetime
 
 
 app = Flask(__name__)
 
 
 process = subprocess.Popen("lila-gif")
+
+
+def opening_explorer(fen):
+    fen = fen.replace(" ", "%20")
+    url = f"https://explorer.lichess.ovh/lichess?fen={fen}"
+    print(url)
+    response = httpx.get(url)
+    print(response.content)
+
+
+def create_all():
+    con = sqlite3.connect("games.db")
+    query = """
+    create table if not exists games(
+        date text,
+        white text,
+        black text,
+        pgn text,
+        winner numeric
+    )
+    """
+    cursor = con.cursor()
+    cursor.execute(query)
+    con.commit()
+    cursor.close()
+    con.close()
+
+
+create_all()
+
+
+def save_game(white, black, pgn, winner):
+    date = datetime.date.today()
+    con = sqlite3.connect("games.db")
+    cursor = con.cursor()
+    query = """
+    INSERT INTO games VALUES(?,?,?,?,?)
+    """
+    cursor.execute(query,
+                   (date, white,
+                    black, pgn, winner))
+    con.commit()
+    cursor.close()
+    con.close()
 
 
 def add_state(board: list, quality):
@@ -202,12 +248,13 @@ def new_game():
 def get_engine_move():
     fen = request.get_json().get("fen")
     engine = request.get_json().get("engine")
-    command = ["./eval", engine, fen, "5"]
+    command = ["./eval", engine, fen, "3"]
     out = subprocess.run(
             command,
             capture_output=True
         )
     move = out.stdout.decode("utf-8").replace("\n", "")
+    opening_explorer(fen)
     print(move, out.stderr)
     return jsonify({"data": move})
 
@@ -276,3 +323,16 @@ def download_image():
     fen = request.get_json().get("fen")
     fen_to_image(fen)
     return jsonify({"data": "200"})
+
+
+@app.route("/save", methods=["POST"])
+def save_games():
+    data = request.get_json()
+    white = data.get("white")
+    black = data.get("black")
+    pgn = data.get("pgn")
+    winner = data.get("winner")
+    save_game(white, black,
+              pgn, winner)
+    print(data)
+    return jsonify({"data": "successful"})
