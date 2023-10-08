@@ -254,7 +254,7 @@ def get_engine_move():
             capture_output=True
         )
     move = out.stdout.decode("utf-8").replace("\n", "")
-    opening_explorer(fen)
+    # opening_explorer(fen)
     print(move, out.stderr)
     return jsonify({"data": move})
 
