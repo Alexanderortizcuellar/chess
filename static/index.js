@@ -742,9 +742,9 @@ function doPromotionAut(move) {
 	if (move.includes("1")) {
 		promPiece = promPiece.replace("white", "black")
 	}
+	let who = getTurn(src.style.backgroundImage)
 	src.style.backgroundImage = "url('')"
 	target.style.backgroundImage = `url('${promPiece}')`;
-	let who = getTurn(src.style.backgroundImage)
 	toFen(who)
 	toPGN(src, target, move)
 	clearCheck()
