@@ -9,13 +9,16 @@
 		<script type="module" src="static/js/dist/esm/chess.js"></script>
 
 	<style> 
-.options {
-	color:white;
-	font-size: 1.6em;
-}
 	</style>
 	</head>
 	<body>
+	<header>
+	<div class="toggle-wrapper">
+		<div class="ham-wrapper">
+		<div class="hamb"></div>
+		</div>
+	</div>
+	</header>
 		<dialog class="dlg">
 			<form method="dialog">
 			<div class="white-prom">
@@ -43,7 +46,7 @@
 			</form>
 		</dialog>
 
-
+		<!--dialog for importing pgn -->
 		<dialog>
 			<form action="">
 				
@@ -64,20 +67,52 @@
 				{% include 'export.html' %}	
 			</form>
 			
+		</dialog >
+		<!--dialog for options-->
+		<dialog class="options" style="background: transparent;border:none;outline: none;">
+			<form method="dialog" style="background: transparent;">
+				{% include 'options.html' %}
+			</form>
 		</dialog>
+
 
 		<div class="pgn-container">
 			<div class="pgn"></div>
 
 		</div>
-		<span id="oponent1" class="player"></span>
+		<div class="menu">
+			<div class="logo">
+				<img src="/static/favicon.ico" alt=""/>
+			<h3>Chess</h3>
+			</div>
+			<nav>
+			<ul>
+			<li><a href="/">Home</a></li>	
+			<li><a href="/">Play</a></li>	
+			<li><a href="">Puzzles</a></li>	
+			<li><a href="">Endgame</a></li>	
+			<li><a href="">Openings</a></li>	
+			<li><a href="">Analisis</a></li>	
+			<li><a href="">Coordinates</a></li>	
+			<li><a href="">Games</a></li>	
+			</ul>
+			</nav>
+		</div>
+		<div class="profile" id="first">
+			<span id="name"></span>
+			<span id="time"></span>
+		</div>
+
 		<div class="container">
 			{% for x in sqs %}
 			
 			<button class="sq {{ x[0] }}" id="{{ x[1] }}" style="background-image:url('{{ x[2] }}');background-position:center;background-repeat:no-repeat;"> </button>
 			{% endfor %}
 		</div>
-		<span id="oponent2" class="player"></span>
+		<div class="profile" id="first">
+			<span id="name"></span>
+			<span id="time"></span>
+		</div>
 		<div class="row-cmd">
 			<button class="turn-board"></button>
 			<button class="full-back"></button>
@@ -87,12 +122,11 @@
 
 		</div>
 		<div class="row-cmd">
-			<button class="options">{:}</button>
+			<button class="options"></button>
 			<button class="export"></button>
 			<button class="help"></button>
 			<button class="import"></button>
 		</div>
-		<button class="newgame">new Game</button>
 		<div>
 			<span class="info"></span>
 		</div>

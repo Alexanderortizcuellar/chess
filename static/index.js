@@ -18,6 +18,7 @@ let historyStep = -1;
 let initialFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 let loadedFen
 let fen = initialFen;
+let loaded = false;
 document.querySelector("input#fen").value = initialFen
 
 window.onload = ()=>{
@@ -38,6 +39,23 @@ let selfEng1Entry = document.querySelector("select#eng1")
 let selfEng2Entry = document.querySelector("select#eng2")
 let positionFenEntry = document.querySelector("input#fen-new-input")
 
+let menuToggle = document.querySelector("div.toggle-wrapper")
+
+let menu = document.querySelector("div.menu")
+menuToggle.addEventListener("click",()=>{
+	menu.style.display = "none"
+	if (menu.style.display=="none") {
+		menu.style.display = "flex"
+		menu.style.width = "70%"
+	} else {
+		menu.style.display = "none"
+	}
+})
+
+let menuHider = document.querySelector("div.menu h3")
+menuHider.addEventListener("click", ()=>{
+	menu.style.display = "none"
+})
 let turnBoardBtn = document.querySelector(".turn-board")
 turnBoardBtn.addEventListener("click", () => {
 	swapBoard(fen)
@@ -61,7 +79,7 @@ let fullBackBtn = document.querySelector("button.full-back")
 fullBackBtn.addEventListener("click", ()=>{  
 	goToMove(0)
 })
-let newGamebtn = document.querySelector("button.newgame")
+let newGamebtn = document.querySelector("button#new")
 
 newGamebtn.addEventListener("click", () => {
 	newGamedlg.showModal()	
@@ -80,6 +98,13 @@ importBtn.addEventListener("click", ()=>{
 	importFen()
 })
 
+let optionsButton = document.querySelector("button.options")
+
+let optsDlg = document.querySelector("dialog.options")
+
+optionsButton.addEventListener("click", ()=>{
+	optsDlg.showModal()
+})
 
 let btnExport = document.querySelector("button.export")
 let dlgExport = document.querySelector("dialog.export-dlg")
@@ -107,6 +132,12 @@ let saveBtn = document.querySelector("button#save")
 saveBtn.addEventListener("click", ()=>{
 	save()
 })
+
+let playFromBtn = document.querySelector("button#play")
+playFromBtn.addEventListener("click", ()=>{
+	playEngine(fen)
+})
+
 let importFenDlgBtn = document.querySelector("button#fen-dlg-btn")
 
 
@@ -199,6 +230,7 @@ function handleClick(evt) {
 		previous.classList.add("movesFrom")
 		evt.classList.add("movesTo")
 		let who = getTurn(evt.style.backgroundImage)
+		console.log(fen)
 		toPGN(previous, evt, previous.id+evt.id)
 		toFen(who)
 		clearCheck()
@@ -542,6 +574,9 @@ function pgnFromCoordsJs() {
 	if (mode === 'position') {
 		fenstr = loadedFen
 	}
+	if (loaded) {
+		fenstr = loadedFen;
+	}
 	let pgnobjt = {}
 	let moves  = coords.split(" ")
 	moves = moves.slice(0, -1)
@@ -598,9 +633,6 @@ function getMovesJs(fenstring) {
 function validateMove(move) {
 	// allowed moves has the suffix of the promotion piece
 	let moves = getMovesJs(fen)
-
-	console.log(fen)
-	console.log(moves)
 	for (const m of moves) {
 		if (m.slice(0,4) == move){
 		  if (m.length > 4) {
@@ -745,6 +777,7 @@ function doPromotionAut(move) {
 	let who = getTurn(src.style.backgroundImage)
 	src.style.backgroundImage = "url('')"
 	target.style.backgroundImage = `url('${promPiece}')`;
+	window.alert(promPiece)
 	toFen(who)
 	toPGN(src, target, move)
 	clearCheck()
@@ -843,6 +876,13 @@ function configureGame() {
 		mode = modeEntry.value
 		loadedFen = positionFenEntry.value
 		fen = loadedFen
+	
+		let chess = new Chess(fen)
+		if (chess.turn()=="w") {
+			turn = 0
+		} else {
+			turn = 1
+		}
 	}
 	if (mode==="random") {
 		newGame(initialFen)
@@ -906,6 +946,7 @@ function getPgn() {
 function getEngineMove(engine) {
 	let who = turnStrFromInt(turn)
 	toFen(who)
+	console.log(fen)
 	let worker = new Worker("static/worker.js")
 	worker.onmessage = function(e) {
 		let move = e.data["data"]["data"]
@@ -923,6 +964,16 @@ function playMoves(board) {
 	}
 }
 
+function highlightMove(index) {
+	let btns = document.querySelectorAll("button.pgn-move-str")
+	btns = Array.from(btns)
+	for (const move of btns) {
+		move.style.background = "transparent"
+	}
+	btns[`${index}`].style.backgroundColor = "rgb(0,183,255)"
+	btns[`${index}`].scrollIntoView()
+	
+}
 function goFwd() {
 	let fenstr = resolveFen()
 	let board = new Chess(fenstr)
@@ -934,9 +985,11 @@ function goFwd() {
 		fen = fencur
 		changeState(fencur)
 		movemp3.play()
+		highlightMove(historyStep)
 	}
 
 }
+
 
 
 function goBack() {
@@ -949,7 +1002,9 @@ function goBack() {
 		let fencur = history[historyStep]["after"]
 		fen = fencur
 		changeState(fencur)
+		undoMove(fencur)
 	}
+	
 }
 
 function goToMove(move) {
@@ -1035,3 +1090,38 @@ function save() {
 		});
 }
 
+function undoMove(fen) {
+	let chess = new Chess(fen)
+	if (chess.turn()=="w") {
+		turn = 0
+	} else {
+		turn = 1
+	}
+	moveNumber = chess.moveNumber()
+	step = historyStep;
+	chess.reset()
+	playMoves(chess)
+	let history = chess.history({"verbose":true})
+	coords = ""
+	for (let i=0;i<step+1;i++) {
+		coords += history[i].lan + " "
+		console.log(coords)
+	}
+	changeState(fen)
+}
+
+function readPgn(pgn) {
+	let chess = new Chess()
+	chess.loadPgn(pgn)
+	let history = chess.history({"verbose":true})
+	coords = ""
+	for (let i=0;i<step+1;i++) {
+		coords += history[i].lan + " "
+	}
+	newGame(initialFen)
+}
+function playEngine(fen) {
+	engine1 = "mess"
+	mode = "engine"
+	loaded = true;
+}

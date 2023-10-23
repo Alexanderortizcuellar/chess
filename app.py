@@ -7,7 +7,7 @@ import chess
 import httpx
 import sqlite3
 import datetime
-
+import random
 
 app = Flask(__name__)
 
@@ -209,6 +209,18 @@ def fen_to_image(fen):
         f.write(response.content)
 
 
+def get_first_move():
+    moves = ['e2e4', 'd2d4', 'g1f3',
+             'c2c4', 'e2e3', 'g2g3',
+             'b2b3', 'd2d3', 'f2f4',
+             'b1c3', 'b2b4', 'c2c3',
+             'g2g4', 'f2f3', 'h2h4',
+             'a2a3', 'a2a4', 'h2h3',
+             'g1h3', 'b1a3']
+    random.shuffle(moves)
+    return random.choice(moves)
+
+
 # routes start here
 @app.route("/")
 def home():
@@ -247,8 +259,12 @@ def new_game():
 @app.route("/eval", methods=["POST"])
 def get_engine_move():
     fen = request.get_json().get("fen")
+    if fen == chess.Board().fen():
+        move = get_first_move()
+        return jsonify({"data": move})
     engine = request.get_json().get("engine")
-    command = ["./eval", engine, fen, "3"]
+    depth = random.randint(2, 4)
+    command = ["./eval", engine, fen, str(depth)]
     out = subprocess.run(
             command,
             capture_output=True
