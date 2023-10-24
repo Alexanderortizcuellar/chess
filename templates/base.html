@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Chess</title>
+	<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+	<link rel="stylesheet" href="/static/main.css">
+	<link rel="stylesheet" href="/static/style.css">
+	<script type="module" src="static/js/dist/esm/chess.js"></script>
+</head>
+<body>
+	<header>
+	<div class="toggle-wrapper">
+		<div class="ham-wrapper">
+		<div class="hamb"></div>
+		</div>
+	</div>
+	</header>
+		<div class="menu">
+			<div class="logo">
+				<img src="/static/favicon.ico" alt=""/>
+			<h3>Chess</h3>
+			</div>
+			<nav>
+			<ul>
+			<li><a href="/">Home</a></li>	
+			<li><a href="/">Play</a></li>	
+			<li><a href="">Puzzles</a></li>	
+			<li><a href="">Endgame</a></li>	
+			<li><a href="">Openings</a></li>	
+			<li><a href="">Analisis</a></li>	
+			<li><a href="">Coordinates</a></li>	
+			<li><a href="/games">Games</a></li>	
+			</ul>
+			</nav>
+		</div>
+		{% block content %}
+		{% endblock %}
+		<script src="/static/menu.js"></script>
+</body>
+</html>
+

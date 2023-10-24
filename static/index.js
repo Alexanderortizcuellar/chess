@@ -19,6 +19,8 @@ let initialFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 let loadedFen
 let fen = initialFen;
 let loaded = false;
+let whitePlayer
+let blackPlayer
 document.querySelector("input#fen").value = initialFen
 
 window.onload = ()=>{
@@ -39,23 +41,6 @@ let selfEng1Entry = document.querySelector("select#eng1")
 let selfEng2Entry = document.querySelector("select#eng2")
 let positionFenEntry = document.querySelector("input#fen-new-input")
 
-let menuToggle = document.querySelector("div.toggle-wrapper")
-
-let menu = document.querySelector("div.menu")
-menuToggle.addEventListener("click",()=>{
-	menu.style.display = "none"
-	if (menu.style.display=="none") {
-		menu.style.display = "flex"
-		menu.style.width = "70%"
-	} else {
-		menu.style.display = "none"
-	}
-})
-
-let menuHider = document.querySelector("div.menu h3")
-menuHider.addEventListener("click", ()=>{
-	menu.style.display = "none"
-})
 let turnBoardBtn = document.querySelector(".turn-board")
 turnBoardBtn.addEventListener("click", () => {
 	swapBoard(fen)
@@ -892,8 +877,14 @@ function configureGame() {
 		newGame(initialFen)
 		mode=modeEntry.value
 		engine1 = eng1Entry.value
+
 		if (sideEntry.value=="black") {
 			getEngineMove(engine1)
+			whitePlayer = engine1
+			blackPlayer = "Alexander"
+		} else {
+			whitePlayer = "Alexander"
+			blackPlayer = engine1
 		}
 	}
 	if (modeEntry.value=="self") {
@@ -928,7 +919,7 @@ function play() {
 	}
 }
 function resolveFen() {
-	if (mode=="position") {
+	if (mode=="position" || loaded == true) {
 		return loadedFen
 	} else {
 		return initialFen
@@ -997,11 +988,12 @@ function goBack() {
 	let board = new Chess(fenstr)
 	playMoves(board)
 	let history = board.history({"verbose":true})
-	if (historyStep > 0) {
+	if (historyStep >  0) {
 		historyStep -= 1
 		let fencur = history[historyStep]["after"]
 		fen = fencur
 		changeState(fencur)
+		highlightMove(historyStep)
 		undoMove(fencur)
 	}
 	
@@ -1017,6 +1009,7 @@ function goToMove(move) {
 	}
 	let fencur = history[move].after
 	changeState(fencur)
+	highlightMove(move)
 	historyStep = move
 	fen = fencur
 }
@@ -1076,7 +1069,7 @@ function save() {
 	let winner = "-"
 	fetch("/save", {
 		method: 'POST',
-		body: JSON.stringify({"white":white,"black":black,"pgn":currentpgn,"winner":winner}),
+		body: JSON.stringify({"white":whitePlayer,"black":blackPlayer,"pgn":currentpgn,"winner":winner}),
 		headers: {'Content-Type': 'application/json'},
 
 	})
@@ -1100,6 +1093,8 @@ function undoMove(fen) {
 	moveNumber = chess.moveNumber()
 	step = historyStep;
 	chess.reset()
+	let mainFen = resolveFen()
+	chess.load(mainFen)
 	playMoves(chess)
 	let history = chess.history({"verbose":true})
 	coords = ""
@@ -1108,6 +1103,7 @@ function undoMove(fen) {
 		console.log(coords)
 	}
 	changeState(fen)
+	addMovesTodiv()
 }
 
 function readPgn(pgn) {
@@ -1120,6 +1116,7 @@ function readPgn(pgn) {
 	}
 	newGame(initialFen)
 }
+
 function playEngine(fen) {
 	engine1 = "mess"
 	mode = "engine"

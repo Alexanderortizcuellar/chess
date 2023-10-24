@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="games-container">
+	<h3> {{ number }}Games</h3>
+	{% for game in games %}
+		<div class="wrap">
+		<div class="game-wrapper">
+		{% for x in game.board %}
+                        <button class="sq {{ x[0] }}" id="{{ x[1] }}" style="background-image:url('{{ x[2] }}');background-position:center;background-repeat:no-repeat;"> 
+			</button>
+                {% endfor %}
+		</div>
+		<div class="info">
+			<div id="info-header">
+			<span id="title">Classical Game</span><br>
+			<span id="date"> {{ game.date }}</span>
+			</div>
+			<div id="players">					<span>{{ game.white }}</span>
+	<span>Vs</span>
+	<span>{{ game.black }}</span>
+			</div>
+		</div>
+		</div>	
+	{% endfor %}
+</div>
+{% endblock %}

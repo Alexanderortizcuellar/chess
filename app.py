@@ -4,10 +4,13 @@ import subprocess
 import os
 from flask import Flask, jsonify, render_template, request
 import chess
+import chess.pgn
 import httpx
 import sqlite3
 import datetime
 import random
+from io import StringIO
+
 
 app = Flask(__name__)
 
@@ -31,7 +34,7 @@ def create_all():
         white text,
         black text,
         pgn text,
-        winner numeric
+        fen text
     )
     """
     cursor = con.cursor()
@@ -44,7 +47,7 @@ def create_all():
 create_all()
 
 
-def save_game(white, black, pgn, winner):
+def save_game(white, black, pgn, fen):
     date = datetime.date.today()
     con = sqlite3.connect("games.db")
     cursor = con.cursor()
@@ -53,10 +56,27 @@ def save_game(white, black, pgn, winner):
     """
     cursor.execute(query,
                    (date, white,
-                    black, pgn, winner))
+                    black, pgn, fen))
     con.commit()
     cursor.close()
     con.close()
+
+
+def read_games():
+    games = []
+    create_all()
+    con = sqlite3.connect("games.db")
+    cursor = con.cursor()
+    query = """
+    SELECT
+        rowid,date,white,black,pgn,fen
+    FROM games
+    """
+    cursor.execute(query)
+    data = cursor.fetchall()
+    for game in data:
+        games.append(list(game))
+    return games
 
 
 def add_state(board: list, quality):
@@ -226,7 +246,7 @@ def get_first_move():
 def home():
     board = create_board()
     proms = get_promotions(board)
-    t = render_template("index.html", sqs=board, proms=proms)
+    t = render_template("main.html", sqs=board, proms=proms)
     return t
 
 
@@ -347,8 +367,30 @@ def save_games():
     white = data.get("white")
     black = data.get("black")
     pgn = data.get("pgn")
-    winner = data.get("winner")
+    game = chess.pgn.read_game(StringIO(pgn))
+    board = game.board()  # pyright:ignore
+    for move in game.mainline_moves():  # pyright: ignore
+        board.push(move)
+    fen = board.fen()
     save_game(white, black,
-              pgn, winner)
+              pgn, fen)
     print(data)
     return jsonify({"data": "successful"})
+
+
+@app.route("/games", methods=["GET"])
+def show_games():
+    games = []
+    data = read_games()
+    for game in data:
+        game_dict = {}
+        board = fen_to_board(game[-1])
+        game_dict["board"] = board
+        game_dict["white"] = game[2].title()
+        game_dict["black"] = game[3].title()
+        game_dict["date"] = game[1]
+        games.append(game_dict)
+    templ = render_template(
+            "games.html", games=games,
+            number=f"{len(games)} ")
+    return templ

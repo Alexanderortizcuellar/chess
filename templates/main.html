@@ -1,25 +1,7 @@
-<!DOCTYPE html>
-<html>
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width">
-		<link rel="stylesheet" href="/static/style.css" type="text/css" media="screen" title="no title" charset="utf-8">
-		<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
-		<title>chess</title>
-		<script type="module" src="static/js/dist/esm/chess.js"></script>
-
-	<style> 
-	</style>
-	</head>
-	<body>
-	<header>
-	<div class="toggle-wrapper">
-		<div class="ham-wrapper">
-		<div class="hamb"></div>
-		</div>
-	</div>
-	</header>
-		<dialog class="dlg">
+{% extends "base.html" %}
+{% block content %}
+<h5>hello</h5>
+<dialog class="dlg">
 			<form method="dialog">
 			<div class="white-prom">
 		{% for sq in proms.w %}
@@ -80,24 +62,6 @@
 			<div class="pgn"></div>
 
 		</div>
-		<div class="menu">
-			<div class="logo">
-				<img src="/static/favicon.ico" alt=""/>
-			<h3>Chess</h3>
-			</div>
-			<nav>
-			<ul>
-			<li><a href="/">Home</a></li>	
-			<li><a href="/">Play</a></li>	
-			<li><a href="">Puzzles</a></li>	
-			<li><a href="">Endgame</a></li>	
-			<li><a href="">Openings</a></li>	
-			<li><a href="">Analisis</a></li>	
-			<li><a href="">Coordinates</a></li>	
-			<li><a href="">Games</a></li>	
-			</ul>
-			</nav>
-		</div>
 		<div class="profile" id="first">
 			<span id="name"></span>
 			<span id="time"></span>
@@ -135,7 +99,5 @@
 			<div><label for="fen">fen</label><input type="text" name="fen" id="fen"></div>
 		</div>
 		<script type="module" src="/static/index.js" charset="utf-8"></script>
-	</body>
-</html>
 
-
+{% endblock %}
