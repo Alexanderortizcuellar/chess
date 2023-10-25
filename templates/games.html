@@ -13,11 +13,21 @@
 		<div class="info">
 			<div id="info-header">
 			<span id="title">Classical Game</span><br>
-			<span id="date"> {{ game.date }}</span>
+			<p id="date"> {{ game.date }}</p>
 			</div>
-			<div id="players">					<span>{{ game.white }}</span>
+			<div id="players" >	
+		<span>
+			{{ game.white }}
+		</span>
 	<span>Vs</span>
-	<span>{{ game.black }}</span>
+		<span>
+		{{ game.black }}
+		</span>
+			</div>
+			<div id="result" style="background-color: {{ game.color }};">
+			<span>
+				{{ game.result }}
+			</span>	
 			</div>
 		</div>
 		</div>	

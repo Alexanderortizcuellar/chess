@@ -14,7 +14,7 @@ from io import StringIO
 
 app = Flask(__name__)
 
-
+user = "Alexander"
 process = subprocess.Popen("lila-gif")
 
 
@@ -240,6 +240,28 @@ def get_first_move():
     random.shuffle(moves)
     return random.choice(moves)
 
+def game_results(pgn, color):
+    blue = "rgba(0,0,255, 0.6)"
+    red = "rgba(255,0,0,0.6)"
+    pgn = StringIO(pgn)
+    game = chess.pgn.read_game(pgn)
+    board = game.board()  # pyright: ignore
+    for move in game.mainline_moves():  # pyright:ignore
+        board.push(move)
+    if board.is_checkmate():
+        if color == "white":
+            return "Checkmate", "seagreen"
+        else:
+            return "Checkmate",red
+    if board.is_stalemate():
+        return "Stalemate", blue
+    if "/" in board.result():
+        return "Draw", blue
+    if not board.is_game_over():
+        return "Not finished",blue
+    if "/" not in board.result():
+        pass
+    return "",""
 
 # routes start here
 @app.route("/")
@@ -372,6 +394,8 @@ def save_games():
     for move in game.mainline_moves():  # pyright: ignore
         board.push(move)
     fen = board.fen()
+    board.is_checkmate()
+    board.outcome()
     save_game(white, black,
               pgn, fen)
     print(data)
@@ -389,8 +413,24 @@ def show_games():
         game_dict["white"] = game[2].title()
         game_dict["black"] = game[3].title()
         game_dict["date"] = game[1]
+        if game[2] == user:
+            side = "white"
+        else:
+            side = "black"
+        result,color = game_results(game[-2], side)
+        game_dict["result"] =  result
+        game_dict["color"] = color
         games.append(game_dict)
     templ = render_template(
             "games.html", games=games,
             number=f"{len(games)} ")
+    return templ
+
+@app.route("/coordinates")
+def go_to_coords():
+    fen = chess.Board().fen()
+    board = fen_to_board(fen)
+    templ = render_template(
+            "coordinates.html",
+            board=board)
     return templ
