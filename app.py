@@ -231,14 +231,11 @@ def fen_to_image(fen):
 
 def get_first_move():
     moves = ['e2e4', 'd2d4', 'g1f3',
-             'c2c4', 'e2e3', 'g2g3',
-             'b2b3', 'd2d3', 'f2f4',
-             'b1c3', 'b2b4', 'c2c3',
-             'g2g4', 'f2f3', 'h2h4',
-             'a2a3', 'a2a4', 'h2h3',
-             'g1h3', 'b1a3']
+             'c2c4', 'e2e3', 'f2f4',
+             'b1c3']
     random.shuffle(moves)
     return random.choice(moves)
+
 
 def game_results(pgn, color):
     blue = "rgba(0,0,255, 0.6)"
@@ -250,18 +247,26 @@ def game_results(pgn, color):
         board.push(move)
     if board.is_checkmate():
         if color == "white":
-            return "Checkmate", "seagreen"
-        else:
-            return "Checkmate",red
+            if board.result() == "1-0":
+                return "Checkmate", "seagreen"
+            else:
+                return "Checkmate", red
+        if color == "black":
+            if board.result() == "0-1":
+                return "Checkmate", "seagreen"
+            else:
+                return "Checkmate", red
+
     if board.is_stalemate():
         return "Stalemate", blue
     if "/" in board.result():
         return "Draw", blue
     if not board.is_game_over():
-        return "Not finished",blue
+        return "Not finished", blue
     if "/" not in board.result():
         pass
-    return "",""
+    return "", ""
+
 
 # routes start here
 @app.route("/")
@@ -417,14 +422,16 @@ def show_games():
             side = "white"
         else:
             side = "black"
-        result,color = game_results(game[-2], side)
-        game_dict["result"] =  result
+        print(side, game[2])
+        result, color = game_results(game[-2], side)
+        game_dict["result"] = result
         game_dict["color"] = color
         games.append(game_dict)
     templ = render_template(
             "games.html", games=games,
             number=f"{len(games)} ")
     return templ
+
 
 @app.route("/coordinates")
 def go_to_coords():
@@ -433,4 +440,21 @@ def go_to_coords():
     templ = render_template(
             "coordinates.html",
             board=board)
+    return templ
+
+
+@app.route("/blind-chess")
+def blind_css():
+    fen = chess.Board().fen()
+    board = fen_to_board(fen)
+    templ = render_template(
+            "blind.html",
+            board=board)
+    return templ
+
+
+@app.route("/board-memorization")
+def go_to_memorization():
+    templ = render_template(
+            "memorization.html")
     return templ

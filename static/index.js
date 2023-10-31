@@ -1,5 +1,34 @@
 import { Chess } from './js/dist/esm/chess.js'
 import { Board } from './board.js'
+import { Clock} from './js/lib/esm/index.js'
+
+function updateTime(time) {
+	let t = time.remainingTime
+	let con = document.querySelector("div.time")
+	con.innerText = t[0]
+}
+const fischer = Clock.getConfig('Delay  5|5')
+const updateInterval = 100
+let stages = [
+    {
+        time: [50000, 50000],
+        mode: 'Delay',
+        increment: 0,
+    },
+]
+const callback = updateTime
+
+const clock = new Clock({
+  ...fischer,
+  updateInterval,
+  stages,
+  callback,
+})
+clock.push(0)
+setTimeout(() => clock.push(1), 2100)
+setTimeout(() => clock.push(0), 4200)
+setTimeout(() => clock.push(1), 8400)
+
 var movemp3 = new Audio("/static/move.mp3")
 var capturemp3 = new Audio("/static/capture.mp3")
 var newgamemp3 = new Audio("/static/dong.mp3")
@@ -937,7 +966,6 @@ function getPgn() {
 function getEngineMove(engine) {
 	let who = turnStrFromInt(turn)
 	toFen(who)
-	console.log(fen)
 	let worker = new Worker("static/worker.js")
 	worker.onmessage = function(e) {
 		let move = e.data["data"]["data"]

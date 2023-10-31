@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="tools">
+	<button id="colors-tab" name="colors-con">Colors</button>	
+	<button id="bishops-tab" name="bishop-con">Bishop</button>	
+	<button id="knight-tab" name="knight-con">Knight</button>	
+	<button id="colors-tab" name="board-con">Colliding</button>
+</div>
+	<div class="memorize-status-bar">
+		<div class="title-wrapper">
+	<p id="memorize-title">Guess Color</p>
+		</div>
+	<button id="memorize-about">About</button>
+	</div>
+
+	<div id="memorize-con" class="colors-con">
+	<div class="coord-wrapper">
+		<div class="memorize-coord">
+			g8
+		</div>
+	
+	</div>
+		<div>
+		<h3>Pick color for square:</h3>	
+		</div>
+		<div class="memorize-options-wrapper">
+		<button class="even">White</button>
+		<button class="odd">Black</button>
+		</div>	
+	</div>
+	<script src="/static/memorization.js" type="module" ></script>
+{% endblock %}

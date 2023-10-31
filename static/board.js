@@ -1,5 +1,11 @@
 export class Board {
 	constructor(fen) {
+
+		this.colors = ["even", "odd"];
+		this.startpos = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+		if (fen=="startpos") {
+			fen = this.startpos;
+		}
 		this.fen  = fen;
 		this.path = "/static/svg/2048/"
 		this.mappins = {
@@ -26,6 +32,7 @@ export class Board {
 		this._addBlackMappings(this.mappins)
 		this._fixTypes(this.board)
 		this.state = this._fenToBoard(this.fen)
+		this._addColors()
 	}
 	_addBlackMappings(maps) {
 		for (const [key, value] of Object.entries(maps)) {
@@ -125,6 +132,35 @@ export class Board {
 			return false
 		}
 		return true
+	}
+	_addColors() {
+		let colors = ["even", "odd"];
+		for (let row=0;row<this.board.length;row++) {
+			for (let cell=0;cell<8;cell++) {
+				this.board[row][cell]["color"] = this._addCellColor(cell)
+			}
+		}
+	}
+	getSquareColor(square) {
+		this.board.reverse()
+		let row = parseInt(square.slice(1,2)) - 1
+
+		console.log(square.slice(0,1))
+		console.log(row)
+		let letter = square.slice(0,1);
+		let col = this.letters.indexOf(letter)
+		let color =  this.board[row][col]["color"]
+		this.board.reverse()
+		return 	color
+	}
+	
+	_addCellColor(col) {
+		if (col == 7)  {
+			this.colors.reverse()
+		}
+		let color = this.colors[0]
+		this.colors.reverse()
+		return color
 	}
 	changeState(div) {
 		for (let row=0;row<8;row++) {

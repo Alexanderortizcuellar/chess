@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+	<div class="tools">
+	<button id="play-tab" name="content-wrapper">Play</button>	
+	<button id="moves-tab" name="moves-con">Moves</button>	
+	<button id="board-tab" name="board-con">Board</button>	
+	<button id="settings-tab" name="settings-con">Settings</button>	
+	</div>
+<div class="content-wrapper" id="container-blind">
+	<div class="status-bar">
+	    <div class="status">
+		    Starting
+	    </div>
+	    <button id="reset">
+		    Start New
+	    </button>
+	</div>
+	<div class="middle-wrapper">
+	  <div id="player-bar">
+		<div id="user-wrap">
+		   <p>You Played</p>
+		   <button></button>
+		</div>	
+		<div id="engine-wrap">
+		 <p>Computer Played</p>
+		 <button></button>
+		</div>	
+	  </div>
+	  <div class="moves-wrapper">
+	  	
+	  </div>
+	</div>
+</div>
+
+<div class="moves-con" id="container-blind">
+	<div class="blind-table-wrapper">
+	<table class="table-moves" CELLSPACING=0>
+		<thead>
+			<th>Move</th>
+			<th>White</th>
+			<th>Black</th>
+		</thead>
+		<tbody>
+
+		</tbody>
+	</table>	
+	</div>
+</div>
+<div class="board-con" id="container-blind">
+	<div class="blind-board-wrapper">
+		{% for x in board %}
+		<button 
+	     class="sq {{ x[0] }}" 
+	     id="{{ x[1] }}"
+	     style="background-image:url('{{ x[2] }}');background-position:center;background-repeat:no-repeat;"> 
+		</button>
+		{% endfor %}
+	</div>	
+</div>
+
+<div class="settings-con"  id="container-blind">
+	
+</div>
+	<script src="/static/blind.js" 
+		charset="utf-8"
+		type="module">
+	</script>
+
+{% endblock %}
+
+

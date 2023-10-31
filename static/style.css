@@ -16,10 +16,9 @@ body {
 	overflow-x: auto;
     	padding: 6px;
     	width: 100%;
-	height:20px;
+	height:35px;
 	margin-bottom: 10px;
-	background-color: rgb(25,25,25);
-	
+	background-color: rgb(25,25,25);	
 }
 
 .pgn-container::-webkit-scrollbar {
@@ -31,6 +30,7 @@ body {
 	position:relative;
     	font-family: monospace;
     	margin-right: 10px;
+	height:100%;
 }
 
 .pgn-move-int {
@@ -47,83 +47,6 @@ body {
 
 
 
-.menu {
-	position: absolute;
-	left:0;
-	top:0;
-	flex-direction: column;
-	background-color: rgb(20,20,20);
-	width:0%;
-	height:95vh;
-	z-index: 999;
-	margin-left: 0px;
-	margin-top: 0;
-	transition: all 0.5 ease-in-out;
-	display:none;
-}
-
-.full-menu {
-	width:60%;
-	display:flex;
-}
-
-.menu .logo {
-	display:flex;
-	align-items: center;
-	background-color: rgb(10,10,10);
-	position:relative;
-	height:74px;
-
-}
-
-.menu .logo h3::after {
-	content:"";
-	height:4px;
-	width:30px;
-	background-color: white;
-	position: absolute;
-	top:50%;
-	right:10px;
-	transform: rotate(45deg);
-	border-radius: 3px;
-	pointer-events: all;
-}
-.menu .logo h3::before {
-	content:"";
-	height:4px;
-	width:30px;
-	background-color: white;
-	position: absolute;
-	top:50%;
-	right:10px;
-	transform: rotate(-45deg);
-	border-radius: 3px;
-}
-
-.menu .logo h3 {
-	color:white;
-	pointer-events: none;
-	margin-left: 5px;
-}
-.menu .logo img {
-	width:40px;
-	height: 40px;
-	border-radius: 50%;
-}
-
-nav li {
-	list-style: none;
-	margin-top: 20px;
-	font-size: 1.1em;
-	font-family: Arial, Helvetica, sans-serif;
-}
-
-.menu li a {
-	text-decoration: none;
-	font-size: 1.1em;
-	font-family: Arial, Helvetica, sans-serif;
-	color:white;
-}
 .container {
 	display:grid;
 	grid-template-columns:repeat(8, 1fr);
@@ -254,7 +177,7 @@ button.movesFrom {
 .row-cmd {
 	display:flex;
 	justify-content: space-around;
-	height:25px;
+	height:30px;
 	width:100%;
 	background-color:rgb(25,25,25);
 	padding:4px 4px;
@@ -397,6 +320,12 @@ button.movesFrom {
 	width:300px;
 	height:200px;
 	display: none;
+}
+
+.time {
+	width:50px;
+	height:50px;
+	background-color: green;
 }
 @media screen and (max-width:800px) {
 	body {
