@@ -12,6 +12,7 @@ let playContainer = document.querySelector("div.content-wrapper")
 let chessBoard = document.querySelector("div.blind-board-wrapper")
 let table = document.querySelector("table.table-moves")
 let containers = document.querySelectorAll("div#container-blind")
+let statusCon = document.querySelector("div.status")
 
 window.onload = () => {
 	addMoves()
@@ -29,9 +30,12 @@ resetBtn.addEventListener("click", ()=>{
 	userMove.innerHTML = ""
 	EngineMove.innerHTML = ""
 	table.querySelector("tbody").innerHTML = ""
-	let board = new Board(chess.fen())
+	let board = new Board(chess.fen(), 1024)
 	board.changeState(chessBoard)
 	addMoves()
+	statusCon.innerText = "Starting"
+	statusCon.style.backgroundColor = "rgba(65,65,65,0.6)"
+
 })
 
 
@@ -51,25 +55,41 @@ function createElement(m) {
 		let move = evt.currentTarget.innerText
 		updateState(move)
 		userMove.innerText = move
+		//addMoves()
+		checkGameStatus()
 		getEngineMove(chess.fen())
-		addMoves()
 	})
 	movesContainer.appendChild(button)
 }
 
+function checkGameStatus() {
+	if (chess.isDraw()) {
+		statusCon.innerText = "Draw"
+		statusCon.style.backgroundColor = "dodgerblue"
+	}
+	if (chess.isCheckmate()) {
+		statusCon.innerText = "Checkmate"
+		statusCon.style.backgroundColor = "crimson"
+	}
+
+}
 function updateState(move) {
 	chess.move(move)
-	let board = new Board(chess.fen())
+	addMoves()
+	let board = new Board(chess.fen(), 1024)
 	board.changeState(chessBoard)
 	pgnToTable()
 }
 
 function getEngineMove(fen) {
-	let index = Math.floor(Math.random() * chess.moves().length)
-	let move = chess.moves()[index]
-	updateState(move)
-	EngineMove.innerText = move
-
+	let engine = new Worker("/static/worker.js")
+	engine.onmessage =  (e)=>{
+		let move = e.data["data"]["data"]
+		updateState(move)
+		EngineMove.innerText = uciTolan(move)
+		//addMoves()
+	}
+	engine.postMessage({"fen":chess.fen(), "engine":"pleco"})
 }
 
 function hideTabs(active) {
@@ -87,6 +107,7 @@ function focusTab(tab) {
 		t.classList.remove("tab-active")
 	}
 	tab.classList.add("tab-active")
+	console.log(chess.fen())
 }
 
 hideTabs(playContainer)
@@ -97,6 +118,10 @@ function switchTab(tab) {
 	hideTabs(active)
 }
 
+function uciTolan(uciMove) {
+	let history = chess.history({"verbose":true})
+	return history[history.length-1].san
+}
 function pgnToTable() {
 	let moves
 	let data = []

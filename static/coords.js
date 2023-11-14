@@ -41,3 +41,7 @@ function handleCoord(userCoord) {
 
 	}
 }
+
+function trackScore() {
+
+}

@@ -622,12 +622,12 @@ function newGame(fenstr) {
 	clearClass()
 	document.querySelector("div.pgn-container").innerHTML = ""
 	document.querySelector("input#fen").value = initialFen
-	let b = new Board(fenstr)
+	let b = new Board(fenstr, 2048)
 	b.changeState(document.querySelector("div.container"))
 }
 
 function changeState(fenstr) {
-	let b = new Board(fenstr)
+	let b = new Board(fenstr,2048)
 	b.changeState(document.querySelector("div.container"))
 	clearCheck()
 	clearValidMovesClass()

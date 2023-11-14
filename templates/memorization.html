@@ -1,12 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="tools">
-	<button id="colors-tab" name="colors-con">Colors</button>	
-	<button id="bishops-tab" name="bishop-con">Bishop</button>	
-	<button id="knight-tab" name="knight-con">Knight</button>	
-	<button id="colors-tab" name="board-con">Colliding</button>
-</div>
+{% include "memorization-menu.html" %}
 	<div class="memorize-status-bar">
 		<div class="title-wrapper">
 	<p id="memorize-title">Guess Color</p>
@@ -28,6 +23,37 @@
 		<button class="even">White</button>
 		<button class="odd">Black</button>
 		</div>	
+	</div>
+	<!-- bishop container -->
+	<div class="bishop-con">
+		<div id="options-bar">
+				
+		</div>	
+	</div>
+	<!-- knights container -->
+	<div class="knight-con">
+		
+	</div>
+	<!--Board questions -->
+	<div class="board-test-con">
+		<div class="question-wrap">
+		</div>
+		<!--
+		<div class="board-wrapper" style="display: none;">
+		{% for x in board %}
+		<button 
+	     class="sq {{ x[0] }}" 
+	     id="{{ x[1] }}"
+	     style="background-image:url('{{ x[2] }}');background-position:center;background-repeat:no-repeat;"> 
+		</button>
+		{% endfor %}	
+		</div>
+		-->
+	
+		<div>
+		<h3>You will be presented with a board which will disappear in a couple seconds, and then you will be asked a couple questions, ready?</h3>
+		<button>Start</button>
+		</div>
 	</div>
 	<script src="/static/memorization.js" type="module" ></script>
 {% endblock %}

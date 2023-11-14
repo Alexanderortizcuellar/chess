@@ -60,7 +60,26 @@
 </div>
 
 <div class="settings-con"  id="container-blind">
-	
+	<div>
+		<label>Engine</label>
+		<select  id="engines">
+			{% include 'engines.html' %}	
+		</select>
+	</div>
+	<div>
+		<p>You play</p>
+		<div class="checkbox">
+		<button>White</button>
+		<button>Black</button>
+		</div>
+	</div>
+	<div>
+		<p>Show moves</p>
+		<div class="checkbox">
+		<button>Yes</button>
+		<button>False</button>
+		</div>
+	</div>
 </div>
 	<script src="/static/blind.js" 
 		charset="utf-8"

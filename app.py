@@ -114,7 +114,7 @@ def add_state(board: list, quality):
     return board
 
 
-def create_board(initial=True):
+def create_board(initial=True, quality=2048):
     letters = string.ascii_lowercase
     cols = ["even", "odd"]
     cycle = itertools.cycle(cols)
@@ -129,7 +129,7 @@ def create_board(initial=True):
         cols = list(reversed(cols))
         cycle = itertools.cycle(cols)
     if initial:
-        board = add_state(board, 2048)
+        board = add_state(board, quality)
         board = [element for sublist in board for element in sublist]
     return board
 
@@ -169,7 +169,7 @@ def contains(patterns, row):
     return False
 
 
-def fen_to_board(fen: str):
+def fen_to_board(fen: str, quality=2048):
     fen_board = []
     parts = fen.split(" ", 1)
     board_part = parts[0]
@@ -177,11 +177,11 @@ def fen_to_board(fen: str):
     for row in rows:
         new_row = expand_row(row)
         fen_board.append(new_row)
-    board = create_board(False)
+    board = create_board(False, quality)
     for row, rowfen in zip(board, fen_board):
         for col, colfen in zip(row, rowfen):
             col[2] = colfen
-    maps = create_mappings()
+    maps = create_mappings(quality)
     for row in board:
         for col in row:
             col[2] = maps.get(col[2], "")
@@ -189,8 +189,8 @@ def fen_to_board(fen: str):
     return board
 
 
-def create_mappings():
-    path = "static/svg/2048/"
+def create_mappings(quality):
+    path = f"static/svg/{quality}/"
     pieces = os.listdir(path)
     maps = {}
     for piece in pieces:
@@ -232,7 +232,7 @@ def fen_to_image(fen):
 def get_first_move():
     moves = ['e2e4', 'd2d4', 'g1f3',
              'c2c4', 'e2e3', 'f2f4',
-             'b1c3']
+             'b1c3', "g1g2"]
     random.shuffle(moves)
     return random.choice(moves)
 
@@ -413,7 +413,7 @@ def show_games():
     data = read_games()
     for game in data:
         game_dict = {}
-        board = fen_to_board(game[-1])
+        board = fen_to_board(game[-1], 64)
         game_dict["board"] = board
         game_dict["white"] = game[2].title()
         game_dict["black"] = game[3].title()
@@ -436,7 +436,7 @@ def show_games():
 @app.route("/coordinates")
 def go_to_coords():
     fen = chess.Board().fen()
-    board = fen_to_board(fen)
+    board = fen_to_board(fen, 1024)
     templ = render_template(
             "coordinates.html",
             board=board)
@@ -446,7 +446,7 @@ def go_to_coords():
 @app.route("/blind-chess")
 def blind_css():
     fen = chess.Board().fen()
-    board = fen_to_board(fen)
+    board = fen_to_board(fen, 1024)
     templ = render_template(
             "blind.html",
             board=board)

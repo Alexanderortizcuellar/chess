@@ -1,5 +1,5 @@
 export class Board {
-	constructor(fen) {
+	constructor(fen, quality) {
 
 		this.colors = ["even", "odd"];
 		this.startpos = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
@@ -7,7 +7,7 @@ export class Board {
 			fen = this.startpos;
 		}
 		this.fen  = fen;
-		this.path = "/static/svg/2048/"
+		this.path = `/static/svg/${quality}/`
 		this.mappins = {
 		"P":"pawn_white.png",
 		"R":"rook_white.png",
@@ -145,8 +145,6 @@ export class Board {
 		this.board.reverse()
 		let row = parseInt(square.slice(1,2)) - 1
 
-		console.log(square.slice(0,1))
-		console.log(row)
 		let letter = square.slice(0,1);
 		let col = this.letters.indexOf(letter)
 		let color =  this.board[row][col]["color"]
@@ -174,3 +172,22 @@ export class Board {
 	}
 }
 
+class Memorize {
+	constructor(settings, fen) {
+		this.settings
+		this.board = new Board(fen);
+	}
+	createBoard() {
+		console.log(this.board.board)
+	}
+	createQuestions() {
+		let questions = {
+			"where":"Where was ","1":"Was there a ($) on (#)","howmany":"how many pieces where on the board", "whatpiece":"What piece was on (#)","bestmove":"What is the best move?","check":"Was a king in check?","mate":"was there checkmate?","perspective":"What was the board perspective?","findmate":"Find mate in one", "cancapture":"Can the ($) on (#) capture the ($2) in (#2) in one move?"
+		}
+	}
+}
+/*
+startpos = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+let mem = new Memorize("", startpos)
+mem.createQuestions()
+*/
