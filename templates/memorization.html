@@ -9,10 +9,10 @@
 	<button id="memorize-about">About</button>
 	</div>
 
-	<div id="memorize-con" class="colors-con">
+	<div class="memorize-con" id="colors-con">
 	<div class="coord-wrapper">
 		<div class="memorize-coord">
-			g8
+			<p>g8</p>
 		</div>
 	
 	</div>
@@ -20,22 +20,22 @@
 		<h3>Pick color for square:</h3>	
 		</div>
 		<div class="memorize-options-wrapper">
-		<button class="even">White</button>
-		<button class="odd">Black</button>
+		<button class="even" id="even">White</button>
+		<button class="odd" id="odd">Black</button>
 		</div>	
 	</div>
 	<!-- bishop container -->
-	<div class="bishop-con">
+	<div id="bishop-con" class="memorize-con">
 		<div id="options-bar">
 				
 		</div>	
 	</div>
 	<!-- knights container -->
-	<div class="knight-con">
+	<div id="knight-con" class="memorize-con">
 		
 	</div>
 	<!--Board questions -->
-	<div class="board-test-con">
+	<div id="memorize-con" class="memorize-con">
 		<div class="question-wrap">
 		</div>
 		<!--
@@ -54,6 +54,23 @@
 		<h3>You will be presented with a board which will disappear in a couple seconds, and then you will be asked a couple questions, ready?</h3>
 		<button>Start</button>
 		</div>
+	</div>
+	<!--pieceless container -->
+	<div id="pieceless-con" class="memorize-con">
+		
+	</div>
+
+	<!-- blind-tactics container -->
+	<div id="blind-tactics-con" class="memorize-con">
+		
+	</div>
+
+	<!--audio container -->
+	<div id="audio-con" class="memorize-con">
+		
+	</div>
+	<div id="replication-con" class="memorize-con">
+		{% include "replication.html" %}	
 	</div>
 	<script src="/static/memorization.js" type="module" ></script>
 {% endblock %}

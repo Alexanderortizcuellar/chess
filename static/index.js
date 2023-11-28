@@ -1,17 +1,25 @@
 import { Chess } from './js/dist/esm/chess.js'
 import { Board } from './board.js'
 import { Clock} from './js/lib/esm/index.js'
+import { Formater } from "/static/clock.js"
+
+let formatter = new Formater()
+let nameBlackCon = document.querySelector("div#black span#name")
+let nameWhiteCon = document.querySelector("div#white span#name")
+let blackTimeCon  = document.querySelector("div#black span#time")
+let whiteTimeCon = document.querySelector("div#white span#name")
 
 function updateTime(time) {
 	let t = time.remainingTime
 	let con = document.querySelector("div.time")
-	con.innerText = t[0]
+	blackTimeCon.innerHTML = formatter.formatTime(t[1])
+	whiteTimeCon.innerHTML = formatter.formatTime(t[0])
 }
 const fischer = Clock.getConfig('Delay  5|5')
-const updateInterval = 100
+const updateInterval = 1
 let stages = [
     {
-        time: [50000, 50000],
+        time: [60000, 60000],
         mode: 'Delay',
         increment: 0,
     },
@@ -25,9 +33,9 @@ const clock = new Clock({
   callback,
 })
 clock.push(0)
-setTimeout(() => clock.push(1), 2100)
-setTimeout(() => clock.push(0), 4200)
-setTimeout(() => clock.push(1), 8400)
+setTimeout(() => clock.push(1), 10)
+setTimeout(() => clock.push(0), 10)
+setTimeout(() => clock.push(1), 10)
 
 var movemp3 = new Audio("/static/move.mp3")
 var capturemp3 = new Audio("/static/capture.mp3")
@@ -55,6 +63,8 @@ document.querySelector("input#fen").value = initialFen
 window.onload = ()=>{
 	newGamedlg.showModal()
 }
+
+
 let pgnContainer = document.querySelector("div.pgn-container")
 
 let newGamedlg = document.querySelector("dialog.newgame-dlg")
@@ -1069,7 +1079,7 @@ function downloadImage() {
 
 	})
 		.then(response => response.json())
-		.then(data => { 
+		.then(_ => { 
 			download()
 		})
 
@@ -1079,11 +1089,10 @@ function downloadImage() {
 }
 
 function getPosition(coord) {
+	let t = ""
 	let element = document.querySelector(`button#${coord}`)
 	let pos = element.getBoundingClientRect()
-	let t = ""
 	let info = pos.toJSON()
-
 	for (const [k,v] of Object.entries(info)) {
 	t += `${k}: ${v}\n`
 	}
@@ -1092,8 +1101,6 @@ function getPosition(coord) {
 
 function save() {
 	let currentpgn = getPgn()
-	let white = "white"
-	let black = engine1
 	let winner = "-"
 	fetch("/save", {
 		method: 'POST',
@@ -1103,7 +1110,7 @@ function save() {
 	})
 		.then(response => response.json())
 		.then(data => { 
-			console.log("saved!")
+			console.log(data)
 		})
 
 		.catch(error => {

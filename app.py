@@ -13,17 +13,47 @@ from io import StringIO
 
 
 app = Flask(__name__)
+app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 user = "Alexander"
 process = subprocess.Popen("lila-gif")
 
 
-def opening_explorer(fen):
+def get_best_move(fen):
     fen = fen.replace(" ", "%20")
     url = f"https://explorer.lichess.ovh/lichess?fen={fen}"
-    print(url)
-    response = httpx.get(url)
-    print(response.content)
+    try:
+        response = httpx.get(url)
+        moves = []
+        data = response.json()
+        moves_data = data["moves"]
+        for move in moves_data:
+            moves.append(move["uci"])
+        return moves
+    except Exception as e:
+        print(e)
+        return None
+
+
+def get_lichess_move(fen):
+    best_moves = get_best_move(fen)
+    if best_moves is None or len(best_moves) < 1:
+        return None
+    best_move = best_moves[0]
+    if best_move == "e8h8":
+        best_move = "e8g8"
+    return best_move
+
+
+def query_moves(pgn: str):
+    url = "http://localhost:8000/moves?max_moves=5"
+    moves = {"moves": pgn}
+    try:
+        resp = httpx.post()
+        moves = resp.json()
+    except Exception as e:
+        print(e)
+        return None
 
 
 def create_all():
@@ -45,6 +75,17 @@ def create_all():
 
 
 create_all()
+
+
+def create_database():
+    con = sqlite3.connect("data.db")
+    cursor = con.cursor()
+    q = """
+        CREATE TABLE IF NOT EXISTS
+        endgmes(fen)
+    """
+    cursor.execute(q)
+    con.close()
 
 
 def save_game(white, black, pgn, fen):
@@ -238,8 +279,8 @@ def get_first_move():
 
 
 def game_results(pgn, color):
-    blue = "rgba(0,0,255, 0.6)"
-    red = "rgba(255,0,0,0.6)"
+    blue = "dodgerblue"
+    red = "crimson"
     pgn = StringIO(pgn)
     game = chess.pgn.read_game(pgn)
     board = game.board()  # pyright: ignore
@@ -266,6 +307,23 @@ def game_results(pgn, color):
     if "/" not in board.result():
         pass
     return "", ""
+
+
+def get_pieces():
+    path = "/static/svg/1024/"
+    b = {}
+    pieces = ["king", "bishop",
+              "pawn", "knight",
+              "queen", "rook"]
+    b["white"] = []
+    b["black"] = []
+    for piece in pieces:
+        p = path+piece+"_white.png"
+        b["white"].append(p)
+        p = ""
+        p = path+piece+"_black.png"
+        b["black"].append(p)
+    return b
 
 
 # routes start here
@@ -310,6 +368,12 @@ def get_engine_move():
         move = get_first_move()
         return jsonify({"data": move})
     engine = request.get_json().get("engine")
+    if engine == "lichess":
+        best_move = get_lichess_move(fen)
+        if best_move is not None:
+            print(best_move)
+            return jsonify({"data": best_move})
+        engine = "pleco"
     depth = random.randint(2, 4)
     command = ["./eval", engine, fen, str(depth)]
     out = subprocess.run(
@@ -407,6 +471,18 @@ def save_games():
     return jsonify({"data": "successful"})
 
 
+@app.route("/analisis")
+def go_to_analisis():
+    fen = chess.Board().fen()
+    b = get_pieces()
+    board = fen_to_board(
+            fen, quality=1024)
+    templ = render_template(
+            "analisis.html",
+            board=board, b=b)
+    return templ
+
+
 @app.route("/games", methods=["GET"])
 def show_games():
     games = []
@@ -453,8 +529,17 @@ def blind_css():
     return templ
 
 
+@app.route("/get-fen")
+def get_fen():
+    return jsonify({"data": ""})
+
+
 @app.route("/board-memorization")
 def go_to_memorization():
+    b = get_pieces()
+    fen = chess.Board().fen()
+    board = fen_to_board(fen)
     templ = render_template(
-            "memorization.html")
+            "memorization.html",
+            b=b, board=board)
     return templ

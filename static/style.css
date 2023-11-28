@@ -54,6 +54,7 @@ body {
 	height:95%;
 	width:38%;
 	margin-bottom:3%;
+	margin-top:3%;
 
 }
 
@@ -321,7 +322,21 @@ button.movesFrom {
 	height:200px;
 	display: none;
 }
+.profile {
+	display:flex;
+	width:100%;
+	height:35px;
+	background-color: white;
+}
 
+.profile img {
+	width:30px;
+	height:30px;
+}
+span#time {
+	background-color: black;
+	color:white;
+}
 .time {
 	width:50px;
 	height:50px;

@@ -183,7 +183,7 @@ header {
 	border-radius: 3px;
 }
 .menu {
-	position: absolute;
+	position: fixed;
 	left:0;
 	top:0;
 	flex-direction: column;
@@ -198,7 +198,7 @@ header {
 }
 
 .full-menu {
-	width:60%;
+	width:80%;
 	display:flex;
 }
 
@@ -261,3 +261,4 @@ nav li {
 	color:white;
 	width:100%;
 }
+

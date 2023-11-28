@@ -1,4 +1,4 @@
-.colors-con {
+#colors-con {
 	width:100%;
 	height:500px;
 }
@@ -88,7 +88,7 @@
 	outline-offset: 4px;
 }
 
-.colors-con h3{
+#colors-con h3 {
 	color:rgba(255,255,254,0.98);
 	margin-left: 8px;
 	font-weight: bold;
@@ -121,16 +121,92 @@
 	margin-top: 8px;
 	width:60%;
 	height:auto;
+	pointer-events: none;
 }
 .mem-menu-wrapper p {
 	color:rgba(255,255,254,0.8);
 	font-family: Arial, Helvetica, sans-serif;
 	font-weight: bold;
 	font-size: 1em;
+	pointer-events: none;
 }
-.colors-con {
+#colors-con {
+	display:none;
+	flex-direction: column;
+}
+#memorize-con {
+	display:none
+}
+.memorize-con {
 	display:none;
 }
-.board-test-con {
-	display:none
+
+#replication-con {
+	height:80%;
+}
+.board-pieces-wrapper {
+	display:flex;
+	flex-direction: column;
+}
+.pieces {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	background-color: white;
+	height:95px;
+	margin-top: 15px;
+}
+.presentation  {
+	height:300px;
+	padding: 18px;
+	display: none;
+	flex-direction: column;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.presentation p {
+	color:rgba(255,255,254,0.98);
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 1.1em;
+	margin-bottom: 60px;
+	margin-top:20px;
+}
+.presentation button {
+	width:130px;
+	height:35px;
+	background-color: rgba(13,109,253,1);;
+	font-size: 1.1em;
+	color:white;
+	font-weight: bold;
+	border:none;
+	outline: none;
+	border-radius: 6px;
+}
+.pieces div {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.draggable {
+	width:45px;
+	height: 45px;
+	outline:none;
+	border:none;
+	background: transparent;
+
+}
+
+.chessboard-wrapper {
+	height:370px;
+	width:370px;
+	display:grid;
+	grid-template-columns: repeat(8, auto);
+}
+img.dragging {
+	z-index: 20;
+	max-width: 40px;
+	max-height: 40px;
 }

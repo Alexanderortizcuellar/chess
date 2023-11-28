@@ -1,6 +1,7 @@
 import {Chess} from "./js/dist/esm/chess.js"
 import {Board} from "./board.js"
 
+let engine = "pleco"
 let chess = new Chess()
 
 let movesContainer = document.querySelector("div.moves-wrapper")
@@ -14,8 +15,28 @@ let table = document.querySelector("table.table-moves")
 let containers = document.querySelectorAll("div#container-blind")
 let statusCon = document.querySelector("div.status")
 
+// settings section
+let settingsRows = document.querySelectorAll("div.checkbox")
+let engineOpt = document.querySelector("select#engines")
+engineOpt.value = engine;
+for (const row of settingsRows) {
+	setUpsettings(row)
+}
+
 window.onload = () => {
 	addMoves()
+}
+
+function setUpsettings(con) {
+	
+	for (const btn of con.children) {
+		btn.addEventListener("click", (evt)=>{
+	for (const b of con.children) {
+		b.classList.remove("button-active")
+	}
+		evt.target.classList.add("button-active")
+		})
+}
 }
 
 for (const tab of tabs) {
@@ -74,6 +95,7 @@ function checkGameStatus() {
 
 }
 function updateState(move) {
+	statusCon.innerText = "Playing"
 	chess.move(move)
 	addMoves()
 	let board = new Board(chess.fen(), 1024)
@@ -81,15 +103,16 @@ function updateState(move) {
 	pgnToTable()
 }
 
-function getEngineMove(fen) {
-	let engine = new Worker("/static/worker.js")
-	engine.onmessage =  (e)=>{
+function getEngineMove() {
+	let engineWorker = new Worker("/static/worker.js")
+	engineWorker.onmessage =  (e)=>{
 		let move = e.data["data"]["data"]
 		updateState(move)
-		EngineMove.innerText = uciTolan(move)
+		EngineMove.innerText = uciTolan()
+		checkGameStatus()
 		//addMoves()
 	}
-	engine.postMessage({"fen":chess.fen(), "engine":"pleco"})
+	engineWorker.postMessage({"fen":chess.fen(), "engine":engineOpt.value})
 }
 
 function hideTabs(active) {
@@ -107,7 +130,6 @@ function focusTab(tab) {
 		t.classList.remove("tab-active")
 	}
 	tab.classList.add("tab-active")
-	console.log(chess.fen())
 }
 
 hideTabs(playContainer)
@@ -118,13 +140,12 @@ function switchTab(tab) {
 	hideTabs(active)
 }
 
-function uciTolan(uciMove) {
+function uciTolan() {
 	let history = chess.history({"verbose":true})
 	return history[history.length-1].san
 }
 function pgnToTable() {
 	let moves
-	let data = []
 	table.querySelector("tbody").innerHTML = ""
 	let pattern = new RegExp(/\d\./)
 	let spltted = chess.pgn().split(pattern)

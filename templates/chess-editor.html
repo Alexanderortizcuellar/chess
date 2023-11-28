@@ -1,0 +1,19 @@
+<div class="board-pieces-wrapper">
+<div class="chessboard-wrapper">
+		{% for x in board %}
+		<button class="sq {{ x[0] }}" id="{{ x[1] }}" style="background-image: url('{{ x[2] }}');background-position: center;background-repeat:no-repeat;" draggable="true"> </button>
+                {% endfor %}
+</div>
+<div class="pieces">
+	<div class="white">
+	{% for p in b.white %}
+	<button style="background-image: url('{{ p }}');background-size: contain;background-repeat: no-repeat;background-position: center;" draggable="true" class="draggable"></button>
+	{% endfor %}
+	</div>
+	<div class="black">
+	{% for p in b.black %}
+	<button style="background-image: url('{{ p  }}');background-size: contain;background-repeat: no-repeat;background-position: center;" draggable="true" class="draggable"></button>
+	{% endfor %}
+	</div>
+</div>
+</div>

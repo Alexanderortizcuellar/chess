@@ -142,6 +142,7 @@ export class Board {
 		}
 	}
 	getSquareColor(square) {
+		console.log(this.board)
 		this.board.reverse()
 		let row = parseInt(square.slice(1,2)) - 1
 
@@ -153,11 +154,11 @@ export class Board {
 	}
 	
 	_addCellColor(col) {
+		let color = this.colors[0]
+		this.colors.reverse()
 		if (col == 7)  {
 			this.colors.reverse()
 		}
-		let color = this.colors[0]
-		this.colors.reverse()
 		return color
 	}
 	changeState(div) {
@@ -175,6 +176,7 @@ export class Board {
 class Memorize {
 	constructor(settings, fen) {
 		this.settings
+		this.fen = fen;
 		this.board = new Board(fen);
 	}
 	createBoard() {
@@ -184,6 +186,57 @@ class Memorize {
 		let questions = {
 			"where":"Where was ","1":"Was there a ($) on (#)","howmany":"how many pieces where on the board", "whatpiece":"What piece was on (#)","bestmove":"What is the best move?","check":"Was a king in check?","mate":"was there checkmate?","perspective":"What was the board perspective?","findmate":"Find mate in one", "cancapture":"Can the ($) on (#) capture the ($2) in (#2) in one move?"
 		}
+	}
+	findQuestions() {
+		let data = {}
+
+	}
+
+	getNumberPieces() {
+		let number = 0;
+		let firstFen = this.fen.split(" ", 1)[0];
+		for (const c of firstFen) {
+			if (this._isLetter(c)) {
+				number +=1
+			}
+		}
+		return number
+	}
+
+	_isLetter(character) {
+		let pattern = new RegExp(/[A-Za-z]+/);
+		let match = pattern.exec(character)
+		if (match==null) {
+			return false
+		} else {
+			return true
+		}
+	}
+}
+
+
+export class Formater {
+	constructor() {
+		this.time = 60000;
+	}
+	_createTime() {
+		let secs = this.time / 1000;
+		let [hours,left] = this._divmod(secs, 3600);
+		let [minutes, secsLeft] = this._divmod(left, 60)
+		let [seconds,millisLeft] = this._divmod(secsLeft, 1000)
+		let milli = millisLeft;
+		return [hours,minutes,seconds,milli]
+	}
+	formatTime(time) {
+		this.time = time;
+		const [hours,minutes,seconds,milli] = this._createTime()
+		let timeFormatted = `${hours}:${minutes}:${seconds}`
+		return timeFormatted
+	}
+	_divmod(n, divisor) {
+		let quotient = Math.floor(n / divisor);
+		let reminder = n % divisor;
+		return [quotient,reminder]
 	}
 }
 /*
