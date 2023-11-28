@@ -16,7 +16,7 @@ app = Flask(__name__)
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 user = "Alexander"
-process = subprocess.Popen("lila-gif")
+# process = subprocess.Popen("lila-gif")
 
 
 def get_best_move(fen):

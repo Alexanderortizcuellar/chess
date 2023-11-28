@@ -4,10 +4,10 @@ import { Clock} from './js/lib/esm/index.js'
 import { Formater } from "/static/clock.js"
 
 let formatter = new Formater()
-let nameBlackCon = document.querySelector("div#black span#name")
-let nameWhiteCon = document.querySelector("div#white span#name")
-let blackTimeCon  = document.querySelector("div#black span#time")
-let whiteTimeCon = document.querySelector("div#white span#name")
+let nameBlackCon = document.querySelector("div#black p#name")
+let nameWhiteCon = document.querySelector("div#white p#name")
+let blackTimeCon  = document.querySelector("div#black p#time")
+let whiteTimeCon = document.querySelector("div#white p#time")
 
 function updateTime(time) {
 	let t = time.remainingTime
@@ -19,7 +19,7 @@ const fischer = Clock.getConfig('Delay  5|5')
 const updateInterval = 1
 let stages = [
     {
-        time: [60000, 60000],
+        time: [6000, 6000],
         mode: 'Delay',
         increment: 0,
     },
@@ -921,9 +921,13 @@ function configureGame() {
 			getEngineMove(engine1)
 			whitePlayer = engine1
 			blackPlayer = "Alexander"
+			nameWhiteCon.innerText = engine1
+			nameBlackCon = "Alexander"
 		} else {
 			whitePlayer = "Alexander"
 			blackPlayer = engine1
+			nameWhiteCon.innerText = "Alexander"
+			nameBlackCon.innerText = engine1
 		}
 	}
 	if (modeEntry.value=="self") {

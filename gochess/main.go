@@ -20,10 +20,10 @@ func main() {
 	fenstr := os.Args[2]
 	depth, _ := strconv.Atoi(os.Args[3])
 	eng, err := uci.New(engine)
-	defer eng.Close()
 	if err != nil {
 		panic(err)
 	}
+	defer eng.Close()
 
 	fen, _ := chess.FEN(fenstr)
 	eng.Run(uci.CmdUCI, uci.CmdIsReady, uci.CmdUCINewGame)
@@ -43,4 +43,3 @@ func ParseMoves(pgn string) {
 	fmt.Println(game.String())
 	fmt.Println(game.FEN())
 }
-

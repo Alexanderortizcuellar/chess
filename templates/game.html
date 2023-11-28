@@ -8,8 +8,6 @@
 	<option value="random">Random</option>
 	<option value="position"> From position</option>
 	</select>
-		
-	</select>
 	</div>
 
 	<div class="color-wrapper">
@@ -25,10 +23,35 @@
 		<label>board</label>
 	</div>
 	<div class="eng-wrapper">
-		<label>Engine</label>
-		<select  id="engine" >
-			{% include 'engines.html' %}
+		<div class="opt-wrapper">
+			<label>Engine</label>
+			<select  id="engine" >
+				{% include 'engines.html' %}
+			</select>
+		</div>
+		<div class="opt-wrapper">
+		<label >depth</label>
+		<select name="depth" id="depth">
+			<option value="1">1</option>
+			<option value="2">2</option>
+			<option value="3">3</option>
+			<option value="4">4</option>
+			<option value="5">5</option>
+			<option value="6">6</option>
+			<option value="7">7</option>
+			<option value="8">8</option>
+			<option value="9">9</option>
+			<option value="10">10</option>
+			<option value="11">11</option>
 		</select>
+	</div>
+	<div class="opt-wrapper">
+		<label>Engine</label>
+		<select  id="clock" >
+			<option value="real">Real Time</option>
+			<option value="real">Unlimited</option>
+		</select>
+	</div>
 	</div>
 
 	<div class="self-wrapper">
@@ -65,7 +88,7 @@
  function handleDiv(current) {
 	 current.style.display = "flex"
 	 current.classList.add("dlg-active")
-	 let divs = Array.from(document.querySelectorAll("div.new-game div"))
+	 let divs = Array.from(document.querySelectorAll("div.new-game>div"))
 	 let val = divs.length
 	 divsFilt = divs.slice(2, val)
 	 let index = divsFilt.indexOf(current)
