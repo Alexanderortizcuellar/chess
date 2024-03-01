@@ -46,11 +46,23 @@
 		</select>
 	</div>
 	<div class="opt-wrapper">
-		<label>Engine</label>
+		<label>Clock</label>
 		<select  id="clock" >
 			<option value="real">Real Time</option>
-			<option value="real">Unlimited</option>
+			<option value="unlimited">Unlimited</option>
 		</select>
+	</div>
+	<div class="opt-wrapper" id="time-wrapper">
+		
+	<label>Time</label>
+	<select name="" id="time-opt">
+		<option value="1">1</option>
+		<option value="3">3</option>
+		<option value="5">5</option>
+
+		<option value="5">10</option>
+		<option value="10">10</option>
+	</select>
 	</div>
 	</div>
 
@@ -84,6 +96,8 @@
  let selfCon = document.querySelector("div.self-wrapper")
  let posCon = document.querySelector("div.position-wrapper") 
  let combo = document.querySelector("select#mode")
+ let showTimeOpt = document.querySelector("div#time-wrapper")
+ let timeNotime = document.querySelector("select#clock")
 
  function handleDiv(current) {
 	 current.style.display = "flex"
@@ -100,6 +114,8 @@
  }
 
  combo.onchange = update
+ timeNotime.onchange = hideTimeOpt 
+
  function update() {
 	 let mode  = this.value;
 	 let = []
@@ -119,4 +135,12 @@
 		 handleDiv(posCon)
 	 }
 }
+ function hideTimeOpt() {
+	 if (this.value=="real") {
+		 showTimeOpt.style.display = "flex"
+
+	 } else {
+		 showTimeOpt.style.display = "none"
+	 }
+ }
 </script>

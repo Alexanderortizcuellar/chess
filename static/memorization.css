@@ -106,8 +106,9 @@
 	padding: 20px;
 }
 .mem-menu-wrapper div {
-	width:170px;
-	height:170px;
+	width:45%;
+	aspect-ratio: 1;
+	height:160px;
 	background-color: rgba(25,25,25,0.8);
 	margin-top: 10px;
 	border-radius: 8px;
@@ -119,7 +120,7 @@
 }
 .mem-menu-wrapper div img {
 	margin-top: 8px;
-	width:60%;
+	width:50%;
 	height:auto;
 	pointer-events: none;
 }
@@ -142,12 +143,22 @@
 }
 
 #replication-con {
-	height:80%;
+	height:90%;
+}
+
+.button-editor-wrap {
+	display: flex;
+	width: 100%;
+	height: 100%;
+	flex-direction: column;
+	align-items: center;
+	gap:6px;
 }
 .board-pieces-wrapper {
 	display:flex;
 	flex-direction: column;
 }
+
 .pieces {
 	display: flex;
 	flex-direction: column;
@@ -160,7 +171,7 @@
 .presentation  {
 	height:300px;
 	padding: 18px;
-	display: none;
+	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: space-between;
@@ -173,7 +184,8 @@
 	margin-bottom: 60px;
 	margin-top:20px;
 }
-.presentation button {
+.presentation button, 
+#submit-rep {
 	width:130px;
 	height:35px;
 	background-color: rgba(13,109,253,1);;
@@ -183,6 +195,13 @@
 	border:none;
 	outline: none;
 	border-radius: 6px;
+	margin-top: 15px;
+
+}
+
+.presentation button:active,
+#submit-rep:active {
+	opacity: 0.7;
 }
 .pieces div {
 	display: flex;
@@ -200,8 +219,8 @@
 }
 
 .chessboard-wrapper {
-	height:370px;
-	width:370px;
+	height:100vw;
+	width:100vw;
 	display:grid;
 	grid-template-columns: repeat(8, auto);
 }
@@ -209,4 +228,25 @@ img.dragging {
 	z-index: 20;
 	max-width: 40px;
 	max-height: 40px;
+}
+
+.board-rep-wrapper {
+	width:100vw;
+	height:100vw;
+	margin-top: 45px;
+	margin-bottom: 20px;
+	display:grid;
+	grid-template-columns:repeat(8, 1fr);
+	border:1px solid black;
+}
+
+.rep-bar {
+	height:4px;
+	width:100%;
+}
+
+.rep-bar #progress {
+	height:100%;
+	width:100%;
+	background-color: dodgerblue;
 }

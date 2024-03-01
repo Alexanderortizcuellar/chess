@@ -531,7 +531,14 @@ def blind_css():
 
 @app.route("/get-fen")
 def get_fen():
-    return jsonify({"data": ""})
+    con = sqlite3.connect("fens.db")
+    cursor = con.cursor()
+    n = random.randint(0, 22000)
+    q = f"select fen from fens where rowid={n}"
+    cursor.execute(q)
+    data = cursor.fetchall()
+    data = data[0][0]
+    return jsonify({"data": data})
 
 
 @app.route("/board-memorization")

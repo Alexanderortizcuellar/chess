@@ -1,4 +1,5 @@
 import {Board} from "./board.js"
+import {Parser} from "./parser.js"
 let board = new Board("startpos", 1024)
 let menu = document.querySelector("div.mem-menu-wrapper")
 let menuOptions = menu.querySelectorAll("div.menu-opt")
@@ -7,6 +8,28 @@ let statusBar = document.querySelector("div.memorize-status-bar")
 //colors
 let coord = document.querySelector("div.memorize-coord p")
 let colorOptions = document.querySelectorAll("div.memorize-options-wrapper button")
+let outerWrapper = document.querySelector("div.outer-wrapper")
+outerWrapper.style.display = "none"
+let boardRep = document.querySelector("div.board-rep-wrapper")
+let barProgress = document.querySelector("div.rep-bar div#progress")
+let editorBoard = document.querySelector("div.chessboard-wrapper")
+
+let editorSubmitBtn = document.querySelector("div.button-editor-wrap")
+editorSubmitBtn.style.display = "none"
+let boardPiecesCon = document.querySelector("div.board-pieces-wrapper")
+let submitRepBtn = document.querySelector("button#submit-rep")
+submitRepBtn.onclick = ()=>{
+	if(checkBoard()) {
+		fetchFen()
+	} else {
+		navigator.vibrate(200)
+	}
+}
+let presentation = document.querySelector("div.presentation")
+let startRepBtn = document.querySelector("button#start-rep")
+startRepBtn.addEventListener("click", ()=>{
+	fetchFen()
+})
 
 window.onload = () => {
 	coord.innerHTML = getRandomCoord()
@@ -102,6 +125,7 @@ pieces.forEach(piece =>{
 squares.forEach((square)=>{
 	square.addEventListener("dragstart", (e)=>{
 		if (square.style.backgroundImage==="url('')" || square.style.backgroundImage ==="") {
+		console.log("hello")
 		return 
 	}
 		const drgImg = document.createElement("img")
@@ -109,7 +133,7 @@ squares.forEach((square)=>{
 		square.style.backgroundImage = "url('')"
 		drgImg.src  = src
 		e.dataTransfer.setData("text/plain", src)
-		drgImg.width = 70
+		drgImg.width = 72
 		e.dataTransfer.setDragImage(drgImg, 50, 70)
 	})
 	square.addEventListener("drop", (e)=>{
@@ -137,4 +161,43 @@ function getImgSrc(src) {
 	let srcImage= pattern.exec(src)[1]
 	return srcImage
 }
+
+function fetchFen() {
+	fetch("/get-fen")
+	.then((resp)=>{
+		return resp.json()
+	})
+	.then((data)=>{
+			let fen = data["data"]
+		let board = new Board(fen, 1024)
+		board.changeState(boardRep)
+		presentation.style.display = "none"
+		outerWrapper.style.display = "block"
+		let p = 100;
+		setInterval(()=>{
+
+			barProgress.style.width = `${p}%`
+			p -=0.125
+		}, 75)
+		setTimeout(()=>{
+			outerWrapper.style.display = "none"
+			editorSubmitBtn.style.display = "flex"
+		}, 60000)
+		
+	})
+	.catch((err)=>{
+		console.log(err)
+	})
+}
+
+function checkBoard() {
+	let parser = new Parser()
+	let fen = parser.toFen(boardRep)
+	let inputFen = parser.toFen(editorBoard)
+	if (fen==inputFen) {
+		return true
+	}
+	return false
+}
+
 

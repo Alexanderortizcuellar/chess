@@ -2,16 +2,18 @@ import { Chess } from './js/dist/esm/chess.js'
 import { Board } from './board.js'
 import { Clock} from './js/lib/esm/index.js'
 import { Formater } from "/static/clock.js"
-
 let formatter = new Formater()
+
 let nameBlackCon = document.querySelector("div#black p#name")
 let nameWhiteCon = document.querySelector("div#white p#name")
 let blackTimeCon  = document.querySelector("div#black p#time")
 let whiteTimeCon = document.querySelector("div#white p#time")
+let timeOpt = document.querySelector("select#time-opt")
+let blackImageCon = document.querySelector("img#black-image")
+let whiteImageCon = document.querySelector("img#white-image")
 
 function updateTime(time) {
 	let t = time.remainingTime
-	let con = document.querySelector("div.time")
 	blackTimeCon.innerHTML = formatter.formatTime(t[1])
 	whiteTimeCon.innerHTML = formatter.formatTime(t[0])
 }
@@ -26,16 +28,12 @@ let stages = [
 ]
 const callback = updateTime
 
-const clock = new Clock({
+let clock = new Clock({
   ...fischer,
   updateInterval,
   stages,
   callback,
 })
-clock.push(0)
-setTimeout(() => clock.push(1), 10)
-setTimeout(() => clock.push(0), 10)
-setTimeout(() => clock.push(1), 10)
 
 var movemp3 = new Audio("/static/move.mp3")
 var capturemp3 = new Audio("/static/capture.mp3")
@@ -212,7 +210,6 @@ function getBoard(elements) {
 		stateBoard.push([element.id, 
 			element.style.backgroundImage, element.classList]);
 	}
-
 	return stateBoard
 }
 
@@ -927,6 +924,7 @@ function configureGame() {
 			whitePlayer = "Alexander"
 			blackPlayer = engine1
 			nameWhiteCon.innerText = "Alexander"
+			whiteImageCon.src = getPicture("Alexander")
 			nameBlackCon.innerText = engine1
 		}
 	}
@@ -1122,6 +1120,7 @@ function save() {
 		});
 }
 
+
 function undoMove(fen) {
 	let chess = new Chess(fen)
 	if (chess.turn()=="w") {
@@ -1157,7 +1156,39 @@ function readPgn(pgn) {
 }
 
 function playEngine(fen) {
-	engine1 = "mess"
+	engine1 = "pleco"
 	mode = "engine"
 	loaded = true;
+}
+
+function manageTime() {
+	let timeMinutes = timeOpt.value;
+	let time = ((timeMinutes*60) * 1000);
+	
+	const fischer = Clock.getConfig('Delay  5|5')
+	const updateInterval = 1
+	let stages = [
+    	{
+            time: [time, time],
+            mode: 'Delay',
+            increment: 0,
+    	},
+	]
+	clock = new Clock({...fischer, stages, updateInterval, updateTime})
+}
+
+function getPlayerNumber() {
+	if (turn%2===0) {
+		return 0
+	}
+	return 1
+}
+
+function getPicture(player) {
+	if (player=="Alexander") {
+		return "/static/images/alex.jpg"
+	} 
+	if (player=="stock") {
+		return "/static/images/stockfish.png"
+	}
 }
