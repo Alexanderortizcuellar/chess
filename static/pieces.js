@@ -1,6 +1,4 @@
-//import { Board } from "./board.js"
-
-class Piece {
+class Knight {
 	constructor(source) {
 		this.source = source
 		//this.board = new Board("startpos");
@@ -41,8 +39,9 @@ class Piece {
 
 		for (const cnd of candidates) {
 			let letter = this.letters[colIndex+cnd[1]]
-console.log(letter +((row+1) + cnd[0]))
+moves.push(letter +((row+1) + cnd[0]))
 		}
+	return moves
 	}
 	_encodeSource() {
 		let parts = this.source.split(/([a-z])/)
@@ -52,5 +51,38 @@ console.log(letter +((row+1) + cnd[0]))
 	}
 }
 
-let piece = new Piece("g1")
+class Bishop {
+	constructor(source) {
+		this.source = source;
+		this.letters = ["a","b","c","d","e","f","g","h"];
+		this.numbers = [1,2,3,4,5,6,7,8]
+		
+	}
+	getMoves() {
+		let [row, col] = this._encodeSource(this.source);
+	let moves = []
+	let directions = [[1,1],[-1,-1],[1,-1],[-1,1]];
+	for (const [dx,dy] of directions) {
+	let newCol = col, newRow = row;
+	while (true) {
+	  newCol += dx;
+	  newRow += dy;
+		if (newCol >=1 && newCol<=8 && newRow >=1 && newRow<=8) {
+		moves.push(this.letters[newCol-1]+ newRow.toString())
+		} else {
+			break
+		}
+	}
+		}
+	console.log(moves)
+	}
+	_encodeSource() {
+		let parts = this.source.split(/([a-z])/)
+		let row = parseInt(parts[2])
+		let col = this.letters.indexOf(parts[1])
+		return [row, col+1]
+	}
+}
+
+let piece = new Bishop("e4")
 piece.getMoves()

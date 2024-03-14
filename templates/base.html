@@ -10,6 +10,7 @@
 	<link rel="stylesheet" href="/static/blind.css">
 	<link rel="stylesheet" href="/static/memorization.css">
 	<link rel="stylesheet" href="/static/analisis.css">
+	<link rel="stylesheet" href="/static/pgn_memorize.css">
 	<script type="module" src="static/js/dist/esm/chess.js"></script>  
 	<script type="module" src="static/parser.js"></script>  
 	<script src="static/DragDropTouch.js"></script>
@@ -39,12 +40,15 @@
 			<li><a href="/coordinates"  draggable="false">Coordinates</a></li>	
 			<li><a href="/blind-chess"  draggable="false">Blind Chess</a></li>	
 			<li><a href="/board-memorization"  draggable="false">Memorization</a></li>	
+			<li><a href="/pgn-memorize"  draggable="false">Pgn Memorize</a></li>	
 			</ul>
 			</nav>
 		</div>
 		{% block content %}
 		{% endblock %}
 		<script src="/static/menu.js"></script>
+		<script src="/static/pgn_memorize.js" type="module">
+		</script>
 </body>
 </html>
 

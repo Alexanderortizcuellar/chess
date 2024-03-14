@@ -3,7 +3,7 @@ body {
 	flex-direction:column ;
 	/*justify-content:center;*/
 	align-items:center ;
-	height:90vh;
+	height:100dvh;
 	width:90vw;
 	background-color: rgb(45,45,45);
 	position: relative;

@@ -368,13 +368,14 @@ def get_engine_move():
         move = get_first_move()
         return jsonify({"data": move})
     engine = request.get_json().get("engine")
+    #engine = "stockfish"
     if engine == "lichess":
         best_move = get_lichess_move(fen)
         if best_move is not None:
             print(best_move)
             return jsonify({"data": best_move})
-        engine = "pleco"
-    depth = random.randint(2, 4)
+        engine = "stockfish"
+    depth = 8
     command = ["./eval", engine, fen, str(depth)]
     out = subprocess.run(
             command,
@@ -550,3 +551,14 @@ def go_to_memorization():
             "memorization.html",
             b=b, board=board)
     return templ
+
+
+@app.route("/pgn-memorize")
+def pgn_memorize():
+    templ = render_template("pgn-memorize.html")
+    return templ
+
+
+@app.route("/gif")
+def get_gif():
+    return {"": ""}
