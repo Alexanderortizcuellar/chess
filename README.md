@@ -2,20 +2,20 @@
 
 ## Description
 
-This Flask application serves as a [brief description of your app's purpose or functionality].
+chess app to play against different engines like Stockfish also you will find chess exercises.
 
 ## Installation
 
 1. Clone the repository:
 
     ```bash
-    git clone https://github.com/your-username/your-flask-app.git
+    git clone https://github.com/Alexanderortizcuellar/chess.git
     ```
 
 2. Navigate to the project directory:
 
     ```bash
-    cd your-flask-app
+    cd chess
     ```
 
 3. Install dependencies:
@@ -41,7 +41,4 @@ To run the Flask application, follow these steps:
 
 Contributions are welcome! If you want to contribute to this project, please fork the repository and submit a pull request with your changes.
 
-## License
-
-This project is licensed under the [License Name] License - see the [LICENSE](LICENSE) file for details.
 
